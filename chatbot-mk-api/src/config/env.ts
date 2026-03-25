@@ -24,8 +24,6 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "15m",
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
 
-  redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
-
   openaiApiKey: requireEnv("OPENAI_API_KEY"),
 
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:8080",
