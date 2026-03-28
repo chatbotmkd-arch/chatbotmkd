@@ -46,8 +46,8 @@ interface UpgradeStatus {
 }
 
 const PLAN_PRICES = {
-  1: { monthly: 1200, annual: 12000 },
-  2: { monthly: 1800, annual: 17000 },
+  1: { monthly: 700, annual: 6000 },
+  2: { monthly: 1200, annual: 12000 },
 };
 
 const UpgradePage = () => {
@@ -248,11 +248,10 @@ const UpgradePage = () => {
                         </span>
                       </div>
                       <ul className="space-y-1.5 text-sm text-muted-foreground">
-                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "2,000" : "10,000"} пораки месечно</li>
+                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "300" : "500"} кредити (пораки) месечно</li>
                         <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "3" : "10"} chatbot-и</li>
                         <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "10" : "50"} извори</li>
-                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> Facebook & Instagram</li>
-                        {plan === 2 && <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> API пристап</li>}
+                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> Сите интеграции</li>
                         {plan === 2 && <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> Приоритетна поддршка</li>}
                       </ul>
                     </CardContent>
