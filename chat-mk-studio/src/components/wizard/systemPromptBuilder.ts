@@ -542,9 +542,8 @@ function getIndustryDetails(answers: WizardAnswers): string {
 
 function getEscalationRules(answers: WizardAnswers): string {
   const behavior = answers.unknown_answer as string;
-  const contact = answers.escalation_contact as string;
   const phone = answers.phone_number as string;
-  const fallbackContact = contact || phone || "";
+  const fallbackContact = phone || "";
 
   switch (behavior) {
     case "admit_redirect":
@@ -562,14 +561,31 @@ function getEscalationRules(answers: WizardAnswers): string {
 
 function getRestrictions(answers: WizardAnswers): string {
   const restrictions = (answers.restricted_topics as string[]) || [];
-  if (restrictions.length === 0 || restrictions.includes("none")) return "";
+  const industry = answers.industry as string;
 
-  const lines = restrictions
-    .filter((r) => r !== "none")
-    .map((r) => `- ${restrictionLabels[r] || r}`)
-    .join("\n");
+  // If user explicitly set restrictions, use those
+  if (restrictions.length > 0 && !restrictions.includes("none")) {
+    const lines = restrictions
+      .filter((r) => r !== "none")
+      .map((r) => `- ${restrictionLabels[r] || r}`)
+      .join("\n");
+    return `\nОГРАНИЧУВАЊА:\n${lines}`;
+  }
 
-  return `\nОГРАНИЧУВАЊА:\n${lines}`;
+  // Smart defaults based on industry
+  const autoRestrictions: string[] = [];
+  autoRestrictions.push("- Никогаш не споменувај конкуренти и не споредувај со други компании.");
+  if (industry === "healthcare") {
+    autoRestrictions.push("- Не давај медицински совети или дијагнози. За медицински прашања упати кон лекар.");
+  }
+  if (industry === "legal") {
+    autoRestrictions.push("- Не давај правни совети. За правни прашања упати кон адвокат.");
+  }
+  if (industry === "finance") {
+    autoRestrictions.push("- Не преговарај за цени, попусти или специјални понуди надвор од официјалните.");
+  }
+
+  return `\nОГРАНИЧУВАЊА:\n${autoRestrictions.join("\n")}`;
 }
 
 function getLanguageInstruction(answers: WizardAnswers): string {
@@ -589,21 +605,33 @@ function getLanguageInstruction(answers: WizardAnswers): string {
 }
 
 export function buildSystemPrompt(answers: WizardAnswers): string {
-  const businessName = answers.business_name as string;
-  const description = answers.business_description as string;
+  const businessName = (answers.business_name as string) || "нашиот бизнис";
+  const description = (answers.business_description as string) || "";
   const hours = answers.working_hours as string;
   const location = answers.location_info as string;
   const phone = answers.phone_number as string;
   const industry = answers.industry as string;
-  const tone = toneLabels[answers.tone as string] || "професионален";
-  const responseLength = responseLengthInstructions[answers.response_length as string] || "";
+  const tone = toneLabels[answers.tone as string] || "пријателски";
+  const responseLength = responseLengthInstructions[answers.response_length as string] || responseLengthInstructions.balanced;
 
   const sections: string[] = [];
 
   // Identity
   const industryLabel = industryLabels[industry] || "";
   const industryContext = industryLabel ? ` во областа на ${industryLabel}` : "";
-  sections.push(`Ти си AI асистент на ${businessName}${industryContext}. ${description}`);
+  const identityParts = [`Ти си AI асистент на ${businessName}${industryContext}.`];
+  if (description) identityParts.push(description);
+  sections.push(identityParts.join(" "));
+
+  // Unique value / trust
+  const uniqueValue = answers.unique_value as string;
+  const customerTrust = answers.customer_trust as string;
+  if (uniqueValue || customerTrust) {
+    const storyParts: string[] = [];
+    if (uniqueValue) storyParts.push(uniqueValue);
+    if (customerTrust) storyParts.push(customerTrust);
+    sections.push(`\nШТО НЕ ИЗДВОЈУВА:\n${storyParts.join("\n")}`);
+  }
 
   // Role
   sections.push(`\nТВОЈА УЛОГА:\n${getRoleSection(answers)}`);
@@ -637,6 +665,24 @@ export function buildSystemPrompt(answers: WizardAnswers): string {
   const restrictions = getRestrictions(answers);
   if (restrictions) sections.push(restrictions);
 
+  // Custom personality
+  const customPersonality = answers.custom_personality as string;
+  if (customPersonality) {
+    sections.push(`\nЛИЧНОСТ НА CHATBOT-ОТ:\n${customPersonality}`);
+  }
+
+  // Custom instructions
+  const customInstructions = answers.custom_instructions as string;
+  if (customInstructions) {
+    sections.push(`\nСПЕЦИЈАЛНИ ИНСТРУКЦИИ:\n${customInstructions}`);
+  }
+
+  // Custom FAQ
+  const customFaq = answers.custom_faq as string;
+  if (customFaq) {
+    sections.push(`\nЧЕСТИ ПРАШАЊА И ОДГОВОРИ:\n${customFaq}`);
+  }
+
   // Universal rules
   sections.push(`\nВАЖНО:
 - Одговарај САМО врз основа на дадените информации и базата на знаење.
@@ -649,8 +695,8 @@ export function buildSystemPrompt(answers: WizardAnswers): string {
 
 export function buildConfig(answers: WizardAnswers) {
   const purpose = answers.bot_purpose as string;
-  const responseLength = answers.response_length as string;
-  const lang = answers.language as string;
+  const responseLength = (answers.response_length as string) || "balanced";
+  const lang = (answers.language as string) || "mk";
 
   // Temperature mapping
   let temperature = 0.5;
@@ -669,11 +715,11 @@ export function buildConfig(answers: WizardAnswers) {
       model: "gpt-4o-mini",
       systemPrompt: buildSystemPrompt(answers),
       language: lang === "mk_en" ? "mk" : lang,
-      tone: answers.tone as string,
+      tone: (answers.tone as string) || "friendly",
       temperature,
     },
     appearance: {
-      greeting: answers.greeting_message as string,
+      greeting: (answers.greeting_message as string) || "Здраво! Како можам да ви помогнам денес?",
       placeholder: "Напишете порака...",
       primaryColor: "#8b5cf6",
       position: "bottom-right",

@@ -4,13 +4,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bot, ArrowLeft, ArrowRight, Loader2, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Bot, ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
-import { WizardAnswers } from "@/components/wizard/types";
-import { getVisibleQuestions, getStepGroups, INDUSTRY_QUESTION_IDS, PURPOSE_QUESTION_IDS } from "@/components/wizard/wizardConfig";
+import { WizardAnswers, WizardGroup } from "@/components/wizard/types";
+import { getVisibleGroups, INDUSTRY_QUESTION_IDS, PURPOSE_QUESTION_IDS } from "@/components/wizard/wizardConfig";
 import { buildConfig, buildSystemPrompt } from "@/components/wizard/systemPromptBuilder";
 import WizardStep from "@/components/wizard/WizardStep";
+import UrlScanStep from "@/components/wizard/UrlScanStep";
 
 const purposeLabels: Record<string, string> = {
   customer_support: "Корисничка поддршка",
@@ -52,102 +54,100 @@ const langLabels: Record<string, string> = {
 const NewChatbotWizard = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [showUrlScan, setShowUrlScan] = useState(true);
   const [answers, setAnswers] = useState<WizardAnswers>({});
-  const [currentQuestionId, setCurrentQuestionId] = useState<string>("bot_name");
+  const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [showReview, setShowReview] = useState(false);
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
+  const [editedPrompt, setEditedPrompt] = useState("");
+  const [direction, setDirection] = useState(1);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
   }, [authLoading, user, navigate]);
 
-  const visibleQuestions = useMemo(() => getVisibleQuestions(answers), [answers]);
-  const currentIndex = visibleQuestions.findIndex((q) => q.id === currentQuestionId);
-  const currentQuestion = visibleQuestions[currentIndex];
-  const stepGroups = useMemo(() => getStepGroups(visibleQuestions), [visibleQuestions]);
-  const totalSteps = visibleQuestions.length;
-  const progressPercent = showReview
-    ? 100
-    : totalSteps > 0
-    ? Math.round(((currentIndex + 1) / totalSteps) * 100)
-    : 0;
-
-  // Find which group the current question belongs to
-  const currentGroup = currentQuestion?.group || "";
-  let groupStepNum = 0;
-  for (const g of stepGroups) {
-    if (g.name === currentGroup) break;
-    groupStepNum += g.count;
-  }
-
-  const currentValue = currentQuestion ? answers[currentQuestion.id] : undefined;
-
-  const isStepValid = () => {
-    if (!currentQuestion) return false;
-    if (!currentQuestion.required) return true;
-    const val = answers[currentQuestion.id];
-    if (val === undefined || val === "") return false;
-    if (Array.isArray(val) && val.length === 0) return false;
-    return true;
+  const handleScanComplete = (prefilled: Partial<WizardAnswers>) => {
+    setAnswers(prefilled as WizardAnswers);
+    setShowUrlScan(false);
   };
 
-  const handleAnswer = (value: string | string[]) => {
-    const newAnswers = { ...answers, [currentQuestion.id]: value };
+  const handleScanSkip = () => {
+    setShowUrlScan(false);
+  };
 
-    // If a branching question changed, clear downstream conditional answers
-    if (currentQuestion.id === "industry") {
+  const groups = useMemo(() => getVisibleGroups(answers), [answers]);
+  const currentGroup = groups[currentGroupIndex];
+  const totalGroups = groups.length;
+  const progressPercent = showReview
+    ? 100
+    : totalGroups > 0
+    ? Math.round(((currentGroupIndex + 1) / totalGroups) * 100)
+    : 0;
+
+  const isGroupValid = () => {
+    if (!currentGroup) return false;
+    return currentGroup.questions.every((q) => {
+      if (!q.required) return true;
+      const val = answers[q.id];
+      if (val === undefined || val === "") return false;
+      if (Array.isArray(val) && val.length === 0) return false;
+      return true;
+    });
+  };
+
+  const handleAnswer = (questionId: string, value: string | string[]) => {
+    const newAnswers = { ...answers, [questionId]: value };
+
+    // Branching cleanup
+    if (questionId === "industry") {
       for (const id of INDUSTRY_QUESTION_IDS) delete newAnswers[id];
-      // Also clear purpose-specific since they depend on industry × purpose
       for (const id of PURPOSE_QUESTION_IDS) delete newAnswers[id];
     }
-    if (currentQuestion.id === "bot_purpose") {
+    if (questionId === "bot_purpose") {
       for (const id of PURPOSE_QUESTION_IDS) delete newAnswers[id];
-    }
-    if (currentQuestion.id === "unknown_answer") {
-      if (value !== "admit_redirect" && value !== "admit_contact") {
-        delete newAnswers.escalation_contact;
-      }
     }
 
     setAnswers(newAnswers);
 
-    // Apply default values for upcoming questions
-    const newVisible = getVisibleQuestions(newAnswers);
-    const nextIdx = newVisible.findIndex((q) => q.id === currentQuestion.id) + 1;
-    if (nextIdx < newVisible.length) {
-      const nextQ = newVisible[nextIdx];
-      if (nextQ.defaultValue && newAnswers[nextQ.id] === undefined) {
-        newAnswers[nextQ.id] = nextQ.defaultValue(newAnswers);
-        setAnswers({ ...newAnswers });
+    // Apply defaults for newly-visible questions in the next group
+    const newGroups = getVisibleGroups(newAnswers);
+    const nextGroupIdx = currentGroupIndex + 1;
+    if (nextGroupIdx < newGroups.length) {
+      const nextGroup = newGroups[nextGroupIdx];
+      for (const q of nextGroup.questions) {
+        if (q.defaultValue && newAnswers[q.id] === undefined) {
+          newAnswers[q.id] = q.defaultValue(newAnswers);
+        }
       }
+      setAnswers({ ...newAnswers });
     }
   };
 
   const handleNext = () => {
-    if (!isStepValid()) return;
+    if (!isGroupValid()) return;
     setDirection(1);
 
-    if (currentIndex >= totalSteps - 1) {
+    // Apply defaults for the next group's questions
+    const newGroups = getVisibleGroups(answers);
+    const nextIdx = currentGroupIndex + 1;
+
+    if (nextIdx >= newGroups.length) {
+      setEditedPrompt(buildSystemPrompt(answers));
       setShowReview(true);
       return;
     }
 
-    const nextVisible = getVisibleQuestions(answers);
-    const nextIdx = nextVisible.findIndex((q) => q.id === currentQuestionId) + 1;
-    if (nextIdx < nextVisible.length) {
-      const nextQ = nextVisible[nextIdx];
-      // Apply default if the next question has one and no answer yet
-      if (nextQ.defaultValue && answers[nextQ.id] === undefined) {
-        setAnswers((prev) => ({
-          ...prev,
-          [nextQ.id]: nextQ.defaultValue!(prev),
-        }));
+    // Apply default values for the next group
+    const nextGroup = newGroups[nextIdx];
+    const updatedAnswers = { ...answers };
+    for (const q of nextGroup.questions) {
+      if (q.defaultValue && updatedAnswers[q.id] === undefined) {
+        updatedAnswers[q.id] = q.defaultValue(updatedAnswers);
       }
-      setCurrentQuestionId(nextQ.id);
     }
+    setAnswers(updatedAnswers);
+    setCurrentGroupIndex(nextIdx);
   };
 
   const handleBack = () => {
@@ -156,8 +156,8 @@ const NewChatbotWizard = () => {
       setShowReview(false);
       return;
     }
-    if (currentIndex > 0) {
-      setCurrentQuestionId(visibleQuestions[currentIndex - 1].id);
+    if (currentGroupIndex > 0) {
+      setCurrentGroupIndex(currentGroupIndex - 1);
     }
   };
 
@@ -165,12 +165,21 @@ const NewChatbotWizard = () => {
     setCreating(true);
     setError("");
     try {
-      const name = answers.bot_name as string;
+      // Auto-generate bot name from business name
+      const businessName = answers.business_name as string;
+      const name = `${businessName} — Chatbot`;
       const { config, appearance } = buildConfig(answers);
+      // Use the user-edited prompt instead of the auto-generated one
+      config.systemPrompt = editedPrompt;
       const chatbot = await api.post<{ _id: string }>("/chatbots", {
         name,
         config,
         appearance,
+        businessInfo: {
+          businessName,
+          phone: (answers.phone_number as string) || undefined,
+          address: (answers.location_info as string) || undefined,
+        },
       });
       navigate(`/dashboard/chatbot/${chatbot._id}`);
     } catch (err) {
@@ -180,9 +189,11 @@ const NewChatbotWizard = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey && !showReview) {
+    if (e.key === "Enter" && !e.shiftKey && !showReview && !showUrlScan) {
       e.preventDefault();
-      if (currentQuestion?.type !== "textarea") {
+      // Don't auto-advance if we have textareas in the current group
+      const hasTextarea = currentGroup?.questions.some((q) => q.type === "textarea");
+      if (!hasTextarea) {
         handleNext();
       }
     }
@@ -219,21 +230,38 @@ const NewChatbotWizard = () => {
         <div className="container py-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-muted-foreground">
-              {showReview
+              {showUrlScan
+                ? "Брзо поставување"
+                : showReview
                 ? "Преглед"
-                : `Чекор ${currentIndex + 1} од ${totalSteps} — ${currentGroup}`}
+                : `${currentGroupIndex + 1} / ${totalGroups} — ${currentGroup?.name}`}
             </span>
-            <span className="text-sm text-muted-foreground">{progressPercent}%</span>
+            <span className="text-sm text-muted-foreground">
+              {showUrlScan ? "" : `${progressPercent}%`}
+            </span>
           </div>
-          <Progress value={progressPercent} className="h-2" />
+          <Progress value={showUrlScan ? 0 : progressPercent} className="h-2" />
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 container max-w-2xl py-10 flex flex-col">
-        <div className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           <AnimatePresence mode="wait" initial={false}>
-            {showReview ? (
+            {showUrlScan ? (
+              <motion.div
+                key="url-scan"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.2 }}
+              >
+                <UrlScanStep
+                  onScanComplete={handleScanComplete}
+                  onSkip={handleScanSkip}
+                />
+              </motion.div>
+            ) : showReview ? (
               <motion.div
                 key="review"
                 initial={{ opacity: 0, x: 30 }}
@@ -243,23 +271,22 @@ const NewChatbotWizard = () => {
               >
                 <ReviewScreen
                   answers={answers}
-                  showPrompt={showPrompt}
-                  onTogglePrompt={() => setShowPrompt(!showPrompt)}
+                  editedPrompt={editedPrompt}
+                  onPromptChange={setEditedPrompt}
                 />
               </motion.div>
-            ) : currentQuestion ? (
+            ) : currentGroup ? (
               <motion.div
-                key={currentQuestion.id}
+                key={`group-${currentGroupIndex}`}
                 initial={{ opacity: 0, x: direction * 30 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: direction * -30 }}
                 transition={{ duration: 0.2 }}
               >
-                <WizardStep
-                  question={currentQuestion}
+                <GroupScreen
+                  group={currentGroup}
                   answers={answers}
-                  value={currentValue ?? (currentQuestion.type === "checkbox" ? [] : "")}
-                  onChange={handleAnswer}
+                  onAnswer={handleAnswer}
                 />
               </motion.div>
             ) : null}
@@ -274,11 +301,11 @@ const NewChatbotWizard = () => {
         )}
 
         {/* Bottom buttons */}
-        <div className="flex items-center justify-between pt-8 mt-8 border-t border-border">
+        <div className={`flex items-center justify-between pt-8 mt-8 border-t border-border ${showUrlScan ? "hidden" : ""}`}>
           <Button
             variant="outline"
             onClick={handleBack}
-            disabled={currentIndex === 0 && !showReview}
+            disabled={currentGroupIndex === 0 && !showReview}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -300,14 +327,24 @@ const NewChatbotWizard = () => {
               Создади Chatbot
             </Button>
           ) : (
-            <Button
-              onClick={handleNext}
-              disabled={!isStepValid()}
-              className="gap-2 bg-gradient-accent text-white hover:opacity-90"
-            >
-              Продолжи
-              <ArrowRight className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-3">
+              {currentGroup && !currentGroup.questions.some((q) => q.required) && (
+                <button
+                  onClick={handleNext}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+                >
+                  Прескокни
+                </button>
+              )}
+              <Button
+                onClick={handleNext}
+                disabled={!isGroupValid()}
+                className="gap-2 bg-gradient-accent text-white hover:opacity-90"
+              >
+                Продолжи
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -315,29 +352,75 @@ const NewChatbotWizard = () => {
   );
 };
 
+// ── Group Screen ──────────────────────────────────────────────
+
+interface GroupScreenProps {
+  group: WizardGroup;
+  answers: WizardAnswers;
+  onAnswer: (questionId: string, value: string | string[]) => void;
+}
+
+function GroupScreen({ group, answers, onAnswer }: GroupScreenProps) {
+  const isSingleQuestion = group.questions.length === 1;
+
+  if (isSingleQuestion) {
+    const question = group.questions[0];
+    const value = answers[question.id] ?? (question.type === "checkbox" ? [] : "");
+    return (
+      <WizardStep
+        question={question}
+        answers={answers}
+        value={value}
+        onChange={(v) => onAnswer(question.id, v)}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <h2 className="font-display font-bold text-2xl text-foreground">
+        {group.name}
+      </h2>
+
+      <div className="space-y-6">
+        {group.questions.map((question) => {
+          const value = answers[question.id] ?? (question.type === "checkbox" ? [] : "");
+          return (
+            <WizardStep
+              key={question.id}
+              question={question}
+              answers={answers}
+              value={value}
+              onChange={(v) => onAnswer(question.id, v)}
+              compact
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Review Screen ──────────────────────────────────────────────
 
 interface ReviewScreenProps {
   answers: WizardAnswers;
-  showPrompt: boolean;
-  onTogglePrompt: () => void;
+  editedPrompt: string;
+  onPromptChange: (prompt: string) => void;
 }
 
-function ReviewScreen({ answers, showPrompt, onTogglePrompt }: ReviewScreenProps) {
-  const prompt = buildSystemPrompt(answers);
-
+function ReviewScreen({ answers, editedPrompt, onPromptChange }: ReviewScreenProps) {
   const rows: { label: string; value: string }[] = [
-    { label: "Име на chatbot", value: answers.bot_name as string },
     { label: "Бизнис", value: answers.business_name as string },
+    { label: "Индустрија", value: industryLabels[answers.industry as string] || (answers.industry as string) },
+    ...(answers.business_description ? [{ label: "Опис", value: answers.business_description as string }] : []),
     ...(answers.phone_number ? [{ label: "Телефон", value: answers.phone_number as string }] : []),
     ...(answers.location_info ? [{ label: "Локација", value: answers.location_info as string }] : []),
-    { label: "Работно време", value: answers.working_hours as string },
-    { label: "Индустрија", value: industryLabels[answers.industry as string] || (answers.industry as string) },
-    { label: "Опис", value: answers.business_description as string },
+    ...(answers.working_hours ? [{ label: "Работно време", value: answers.working_hours as string }] : []),
     { label: "Цел", value: purposeLabels[answers.bot_purpose as string] || (answers.bot_purpose as string) },
     { label: "Тон", value: toneLabels[answers.tone as string] || (answers.tone as string) },
     { label: "Јазик", value: langLabels[answers.language as string] || (answers.language as string) },
-    { label: "Поздрав", value: answers.greeting_message as string },
+    ...(answers.greeting_message ? [{ label: "Поздрав", value: answers.greeting_message as string }] : []),
   ];
 
   return (
@@ -347,13 +430,13 @@ function ReviewScreen({ answers, showPrompt, onTogglePrompt }: ReviewScreenProps
           Преглед на вашиот chatbot
         </h2>
         <p className="text-muted-foreground mt-2">
-          Проверете ги информациите пред да го создадете.
+          Проверете ги информациите и уредете го system prompt-от пред да го создадете.
         </p>
       </div>
 
       <Card>
         <CardContent className="pt-6">
-          <div className="space-y-4">
+          <div className="space-y-3">
             {rows.map((row) => (
               <div key={row.label} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
                 <span className="text-sm font-medium text-muted-foreground min-w-[140px] shrink-0">
@@ -366,24 +449,28 @@ function ReviewScreen({ answers, showPrompt, onTogglePrompt }: ReviewScreenProps
         </CardContent>
       </Card>
 
-      {/* System prompt preview */}
-      <button
-        onClick={onTogglePrompt}
-        className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-      >
-        {showPrompt ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        {showPrompt ? "Сокриј го system prompt-от" : "Прегледај го генерираниот system prompt"}
-      </button>
-
-      {showPrompt && (
-        <Card className="bg-muted/50">
-          <CardContent className="pt-6">
-            <pre className="text-xs text-foreground whitespace-pre-wrap font-mono leading-relaxed">
-              {prompt}
-            </pre>
-          </CardContent>
-        </Card>
-      )}
+      {/* Editable system prompt */}
+      <div className="space-y-3">
+        <div>
+          <h3 className="font-display font-semibold text-lg text-foreground">
+            System Prompt
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Ова е „мозокот" на вашиот chatbot — инструкциите по кои работи.
+            Слободно уредете го, додајте или отстранете делови.
+          </p>
+        </div>
+        <Textarea
+          value={editedPrompt}
+          onChange={(e) => onPromptChange(e.target.value)}
+          className="font-mono text-sm leading-relaxed min-h-[350px] resize-y"
+          placeholder="System prompt..."
+        />
+        <p className="text-xs text-muted-foreground">
+          Совет: Можете да додадете специфични правила, примери за одговори, или информации
+          што chatbot-от треба да ги знае.
+        </p>
+      </div>
     </div>
   );
 }

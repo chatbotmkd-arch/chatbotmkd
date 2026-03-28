@@ -4,6 +4,13 @@ export interface IChatbot extends Document {
   _id: Types.ObjectId;
   teamId: Types.ObjectId;
   name: string;
+  slug: string;
+  businessInfo?: {
+    phone?: string;
+    email?: string;
+    address?: string;
+    businessName?: string;
+  };
   config: {
     model: string;
     systemPrompt: string;
@@ -28,6 +35,13 @@ const chatbotSchema = new Schema<IChatbot>(
   {
     teamId: { type: Schema.Types.ObjectId, ref: "Team", required: true, index: true },
     name: { type: String, required: true, trim: true },
+    slug: { type: String, unique: true, sparse: true, trim: true, lowercase: true },
+    businessInfo: {
+      phone: { type: String },
+      email: { type: String },
+      address: { type: String },
+      businessName: { type: String },
+    },
     config: {
       model: { type: String, default: "gpt-4o-mini" },
       systemPrompt: { type: String, default: "" },

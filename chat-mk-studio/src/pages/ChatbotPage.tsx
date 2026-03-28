@@ -13,7 +13,7 @@ import {
 import {
   Bot, ArrowLeft, Save, Loader2, Trash2, Play, Pause,
   Globe, Facebook, Instagram, Plus, Copy, Check, Code,
-  Database, RefreshCw, X, Send, MessageSquare,
+  Database, RefreshCw, X, Send, MessageSquare, Link2, ExternalLink, BookOpen, Pencil,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 interface Chatbot {
   _id: string;
   name: string;
+  slug?: string;
   status: "draft" | "active" | "paused";
   config: {
     model: string;
@@ -115,6 +116,8 @@ const ChatbotPage = () => {
 
   // Embed code
   const [embedCopied, setEmbedCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [promptFocused, setPromptFocused] = useState(false);
 
   // Conversations history
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -700,6 +703,71 @@ const ChatbotPage = () => {
 
           {/* ═══ Settings Tab ═══ */}
           <TabsContent value="settings">
+            {/* System Prompt — hero section */}
+            <Card className={cn(
+              "mb-8 transition-all duration-200",
+              promptFocused
+                ? "border-primary ring-2 ring-primary/20 shadow-md"
+                : "border-border hover:border-primary/30 cursor-text"
+            )}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      System Prompt
+                      {!promptFocused && (
+                        <span className="inline-flex items-center gap-1 text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                          <Pencil className="w-3 h-3" />
+                          кликнете за уредување
+                        </span>
+                      )}
+                    </CardTitle>
+                    <CardDescription>
+                      Инструкции за AI агентот — како да се однесува и одговара. Ова е најважниот дел од подесувањата.
+                    </CardDescription>
+                  </div>
+                  {promptFocused && (
+                    <Button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="gap-2 bg-gradient-accent text-white hover:opacity-90 shrink-0"
+                    >
+                      {saving ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : saved ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <Save className="w-4 h-4" />
+                      )}
+                      {saved ? "Зачувано!" : "Зачувај"}
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  onFocus={() => setPromptFocused(true)}
+                  onBlur={(e) => {
+                    // Keep focused if clicking the save button
+                    if (e.relatedTarget?.closest?.("button")) return;
+                    setPromptFocused(false);
+                  }}
+                  placeholder="Ти си AI асистент за компанијата X. Одговарај на македонски јазик. Биди кус и точен..."
+                  className={cn(
+                    "font-mono text-sm leading-relaxed min-h-[45vh] resize-y transition-colors duration-200",
+                    promptFocused
+                      ? "bg-background border-primary/30"
+                      : "bg-muted/50 border-transparent"
+                  )}
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Совет: Додадете правила, FAQ, информации за бизнисот — сè што chatbot-от треба да го знае.
+                </p>
+              </CardContent>
+            </Card>
+
             <div className="grid lg:grid-cols-2 gap-8">
               <Card>
                 <CardHeader>
@@ -763,21 +831,6 @@ const ChatbotPage = () => {
               </Card>
 
               <div className="space-y-8">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>System Prompt</CardTitle>
-                    <CardDescription>Инструкции за AI агентот — како да се однесува и одговара</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Textarea
-                      value={systemPrompt}
-                      onChange={(e) => setSystemPrompt(e.target.value)}
-                      placeholder="Ти си AI асистент за компанијата X. Одговарај на македонски јазик. Биди кус и точен..."
-                      rows={8}
-                    />
-                  </CardContent>
-                </Card>
-
                 <Card>
                   <CardHeader>
                     <CardTitle>Изглед</CardTitle>
@@ -1032,26 +1085,209 @@ const ChatbotPage = () => {
                   )}
                 </CardContent>
               </Card>
+              {/* Shareable Link */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                      <Link2 className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">Споделлив линк</CardTitle>
+                      <CardDescription>Директен линк до вашиот chatbot</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {chatbot?.slug ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          readOnly
+                          value={`${window.location.origin}/chat/${chatbot.slug}`}
+                          className="text-sm font-mono"
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="shrink-0"
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/chat/${chatbot.slug}`);
+                            setLinkCopied(true);
+                            setTimeout(() => setLinkCopied(false), 2000);
+                          }}
+                        >
+                          {linkCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="shrink-0"
+                          asChild
+                        >
+                          <a href={`/chat/${chatbot.slug}`} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </Button>
+                      </div>
+                      {chatbot.status !== "active" && (
+                        <p className="text-xs text-amber-600">
+                          Chatbot-от мора да биде активен за линкот да работи.
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Споделете го овој линк за директен пристап до вашиот chatbot без потреба од веб-страна.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Споделливиот линк ќе биде достапен откако chatbot-от ќе биде зачуван.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
           {/* ═══ Embed Tab ═══ */}
           <TabsContent value="embed">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Code className="w-5 h-5 text-primary" />
-                  <div>
-                    <CardTitle>Embed код за веб-страна</CardTitle>
-                    <CardDescription>
-                      Копирајте го кодот и ставете го пред затворачкиот &lt;/body&gt; таг на вашата веб-страна.
-                    </CardDescription>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Code className="w-5 h-5 text-primary" />
+                      <div>
+                        <CardTitle>Embed код за веб-страна</CardTitle>
+                        <CardDescription>
+                          Копирајте го кодот и ставете го на вашата веб-страна.
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <BookOpen className="w-4 h-4" />
+                          Упатство
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl">Како да го додадете chatbot-от на вашата веб-страна</DialogTitle>
+                          <DialogDescription>
+                            Чекор по чекор упатство за инсталација
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-6 py-4">
+                          {/* Step 1 */}
+                          <div className="flex gap-4">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-sm">1</div>
+                            <div>
+                              <h4 className="font-semibold text-foreground mb-1">Копирајте го кодот</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Кликнете на копчето „Копирај код" подолу. Кодот автоматски ќе се копира.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Step 2 */}
+                          <div className="flex gap-4">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-sm">2</div>
+                            <div>
+                              <h4 className="font-semibold text-foreground mb-1">Отворете го HTML-от на вашата страна</h4>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                Пристапете до кодот на вашата веб-страна. Зависно од платформата:
+                              </p>
+                              <div className="space-y-2 text-sm">
+                                <div className="bg-muted rounded-lg px-3 py-2">
+                                  <span className="font-medium text-foreground">WordPress:</span>{" "}
+                                  <span className="text-muted-foreground">Appearance → Theme Editor → footer.php, или користете plugin како „Insert Headers and Footers"</span>
+                                </div>
+                                <div className="bg-muted rounded-lg px-3 py-2">
+                                  <span className="font-medium text-foreground">Wix:</span>{" "}
+                                  <span className="text-muted-foreground">Settings → Custom Code → Add Code → Body - End</span>
+                                </div>
+                                <div className="bg-muted rounded-lg px-3 py-2">
+                                  <span className="font-medium text-foreground">Shopify:</span>{" "}
+                                  <span className="text-muted-foreground">Online Store → Themes → Edit Code → theme.liquid</span>
+                                </div>
+                                <div className="bg-muted rounded-lg px-3 py-2">
+                                  <span className="font-medium text-foreground">Squarespace:</span>{" "}
+                                  <span className="text-muted-foreground">Settings → Advanced → Code Injection → Footer</span>
+                                </div>
+                                <div className="bg-muted rounded-lg px-3 py-2">
+                                  <span className="font-medium text-foreground">Custom HTML:</span>{" "}
+                                  <span className="text-muted-foreground">Отворете го главниот HTML фајл (обично index.html)</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Step 3 */}
+                          <div className="flex gap-4">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-sm">3</div>
+                            <div>
+                              <h4 className="font-semibold text-foreground mb-1">Залепете го кодот пред &lt;/body&gt;</h4>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                Најдете го затворачкиот <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">&lt;/body&gt;</code> таг и
+                                залепете го кодот <strong>непосредно пред него</strong>:
+                              </p>
+                              <div className="bg-muted rounded-lg p-3 font-mono text-xs text-muted-foreground leading-relaxed">
+                                <div>&nbsp;&nbsp;&nbsp;&nbsp;...</div>
+                                <div className="text-primary font-medium">&nbsp;&nbsp;&nbsp;&nbsp;{'<!-- Залепете го кодот ТУКА -->'}</div>
+                                <div>&nbsp;&nbsp;&lt;/body&gt;</div>
+                                <div>&lt;/html&gt;</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Step 4 */}
+                          <div className="flex gap-4">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-sm">4</div>
+                            <div>
+                              <h4 className="font-semibold text-foreground mb-1">Зачувајте и проверете</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Зачувајте ги промените и отворете ја вашата веб-страна. Во долниот десен агол треба да се
+                                појави иконата на chatbot-от. Кликнете на неа за да го тестирате.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Tips */}
+                          <div className="border-t border-border pt-4">
+                            <h4 className="font-semibold text-foreground mb-3">Корисни совети</h4>
+                            <ul className="space-y-2 text-sm text-muted-foreground">
+                              <li className="flex gap-2">
+                                <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                                Кодот треба да се додаде само <strong className="text-foreground">еднаш</strong> — ќе работи на сите страници.
+                              </li>
+                              <li className="flex gap-2">
+                                <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                                Chatbot-от мора да биде <strong className="text-foreground">активиран</strong> (статус: Active) за да се прикажува.
+                              </li>
+                              <li className="flex gap-2">
+                                <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                                Промените во подесувањата (prompt, боја, поздрав) се применуваат <strong className="text-foreground">веднаш</strong> — не треба повторно да го додавате кодот.
+                              </li>
+                              <li className="flex gap-2">
+                                <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                                Ако имате проблеми, проверете дали вашиот домен е додаден во „Дозволени домени" во подесувањата.
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <DialogTrigger asChild>
+                            <Button>Разбрав</Button>
+                          </DialogTrigger>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-muted rounded-lg p-4 font-mono text-sm text-foreground mb-4 overflow-x-auto">
-                  <pre>{`<script>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-muted rounded-lg p-4 font-mono text-sm text-foreground mb-4 overflow-x-auto">
+                    <pre>{`<script>
   (function() {
     var s = document.createElement('script');
     s.src = '${window.location.origin}/widget.js';
@@ -1060,19 +1296,20 @@ const ChatbotPage = () => {
     document.head.appendChild(s);
   })();
 </script>`}</pre>
-                </div>
-                <Button onClick={handleCopyEmbed} className="gap-2">
-                  {embedCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  {embedCopied ? "Копирано!" : "Копирај код"}
-                </Button>
+                  </div>
+                  <Button onClick={handleCopyEmbed} className="gap-2">
+                    {embedCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {embedCopied ? "Копирано!" : "Копирај код"}
+                  </Button>
 
-                {chatbot.status !== "active" && (
-                  <p className="text-sm text-yellow-600 mt-4">
-                    Chatbot-от мора да биде активиран за виџетот да работи. Кликнете "Активирај" горе.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                  {chatbot.status !== "active" && (
+                    <p className="text-sm text-yellow-600 mt-4">
+                      Chatbot-от мора да биде активиран за виџетот да работи. Кликнете „Активирај" горе.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

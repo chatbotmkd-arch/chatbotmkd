@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import ChatbotPage from "./pages/ChatbotPage.tsx";
 import NewChatbotWizard from "./pages/NewChatbotWizard.tsx";
 import UpgradePage from "./pages/UpgradePage.tsx";
+import ChatbotPublicPage from "./pages/ChatbotPublicPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/dashboard/new-chatbot" element={<NewChatbotWizard />} />
             <Route path="/dashboard/chatbot/:id" element={<ChatbotPage />} />
             <Route path="/dashboard/upgrade" element={<UpgradePage />} />
+            <Route path="/chat/:slug" element={<ChatbotPublicPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

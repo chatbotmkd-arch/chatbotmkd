@@ -5,6 +5,7 @@ import { PLAN_LIMITS } from "../config/constants";
 import { AppError } from "../middleware/errorHandler";
 import { AuthRequest } from "../types";
 import { WidgetService } from "../services/WidgetService";
+import { generateUniqueSlug } from "../utils/slug";
 
 export async function listChatbots(req: AuthRequest, res: Response): Promise<void> {
   const chatbots = await Chatbot.find({ teamId: req.user!.teamId }).sort({ createdAt: -1 });
@@ -27,9 +28,14 @@ export async function createChatbot(req: AuthRequest, res: Response): Promise<vo
     throw new AppError(403, `Достигнат е лимитот: максимум ${limits.maxChatbots} chatbot(и). Надградете го вашиот план.`);
   }
 
+  const name = req.body.name || "New Chatbot";
+  const slug = await generateUniqueSlug(name);
+
   const chatbot = new Chatbot({
     teamId: team._id,
-    name: req.body.name || "New Chatbot",
+    name,
+    slug,
+    businessInfo: req.body.businessInfo,
     config: req.body.config,
     appearance: req.body.appearance,
   });
@@ -39,11 +45,14 @@ export async function createChatbot(req: AuthRequest, res: Response): Promise<vo
 }
 
 export async function updateChatbot(req: AuthRequest, res: Response): Promise<void> {
-  const { name, config, appearance, allowedDomains } = req.body;
+  const { name, config, appearance, allowedDomains, businessInfo } = req.body;
+
+  const update: Record<string, unknown> = { name, config, appearance, allowedDomains };
+  if (businessInfo !== undefined) update.businessInfo = businessInfo;
 
   const chatbot = await Chatbot.findOneAndUpdate(
     { _id: req.params.id, teamId: req.user!.teamId },
-    { name, config, appearance, allowedDomains },
+    update,
     { new: true }
   );
 

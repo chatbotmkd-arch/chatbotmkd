@@ -20,3 +20,8 @@ export interface WizardQuestion {
 }
 
 export type WizardAnswers = Record<string, string | string[]>;
+
+export interface WizardGroup {
+  name: string;
+  questions: WizardQuestion[];
+}

@@ -1,4 +1,4 @@
-import { WizardQuestion, WizardAnswers } from "./types";
+import { WizardQuestion, WizardAnswers, WizardGroup } from "./types";
 
 function q(question: WizardQuestion["question"], answers: WizardAnswers): string {
   return typeof question === "function" ? question(answers) : question;
@@ -41,59 +41,11 @@ export const PURPOSE_QUESTION_IDS = [
 
 export const wizardQuestions: WizardQuestion[] = [
   // ══════════════════════════════════════════════════════════════
-  // GROUP 1: Основни информации (quick general — asked first)
-  // ══════════════════════════════════════════════════════════════
-  {
-    id: "bot_name",
-    group: "Основни информации",
-    question: "Како ќе се вика вашиот chatbot?",
-    subtitle: "Ова е интерно име за вас. Клиентите нема да го видат.",
-    type: "text",
-    placeholder: "нпр. Поддршка за клиенти",
-    required: true,
-  },
-  {
-    id: "business_name",
-    group: "Основни информации",
-    question: "Како се вика вашиот бизнис?",
-    type: "text",
-    placeholder: "нпр. Мебел Дизајн ДООЕЛ",
-    required: true,
-  },
-  {
-    id: "phone_number",
-    group: "Основни информации",
-    question: "Телефон за контакт?",
-    subtitle: "Chatbot-от ќе го користи ова за да ги упати клиентите кон вас.",
-    type: "text",
-    placeholder: "нпр. 02 3111 222 / 070 123 456",
-    required: false,
-  },
-  {
-    id: "location_info",
-    group: "Основни информации",
-    question: "Каде се наоѓате?",
-    subtitle: "Внесете адреса, град, или 'онлајн' ако немате физичка локација.",
-    type: "text",
-    placeholder: "нпр. ул. Македонија 5, Скопје",
-    required: false,
-  },
-  {
-    id: "working_hours",
-    group: "Основни информации",
-    question: "Кои се вашите работни часови?",
-    subtitle: "Chatbot-от ќе ги информира клиентите за вашето работно време.",
-    type: "text",
-    placeholder: "нпр. Пон-Пет 09:00-17:00, Саб 10:00-14:00",
-    required: true,
-  },
-
-  // ══════════════════════════════════════════════════════════════
-  // GROUP 2: Вашиот бизнис (industry + description)
+  // SCREEN 1: Индустрија (1 question — critical branching point)
   // ══════════════════════════════════════════════════════════════
   {
     id: "industry",
-    group: "Вашиот бизнис",
+    group: "Индустрија",
     question: "Во која индустрија е вашиот бизнис?",
     subtitle: "Врз основа на ова, ќе ви поставиме прашања специфични за вашата дејност.",
     type: "radio",
@@ -113,9 +65,22 @@ export const wizardQuestions: WizardQuestion[] = [
     ],
     required: true,
   },
+
+  // ══════════════════════════════════════════════════════════════
+  // SCREEN 2: Вашиот бизнис (2 questions)
+  // ══════════════════════════════════════════════════════════════
+  {
+    id: "business_name",
+    group: "Вашиот бизнис",
+    question: "Како се вика вашиот бизнис?",
+    type: "text",
+    placeholder: "нпр. Мебел Дизајн ДООЕЛ",
+    required: true,
+  },
   {
     id: "business_description",
     group: "Вашиот бизнис",
+    required: false,
     question: (a) => {
       const ind = a.industry as string;
       if (ind === "retail") return "Опишете ја вашата продавница во 2-3 реченици.";
@@ -137,11 +102,136 @@ export const wizardQuestions: WizardQuestion[] = [
       if (ind === "hospitality") return "нпр. Хотел со 4 ѕвезди на брегот на Охридско Езеро. 50 соби и ресторан.";
       return "нпр. Ние сме компанија која нуди...";
     },
-    required: true,
+    required: false,
   },
 
   // ══════════════════════════════════════════════════════════════
-  // GROUP 3: Industry-specific details
+  // SCREEN 3: Контакт информации (3 questions)
+  // ══════════════════════════════════════════════════════════════
+  {
+    id: "phone_number",
+    group: "Контакт информации",
+    question: "Телефон за контакт",
+    subtitle: "Chatbot-от ќе го користи ова за да ги упати клиентите кон вас.",
+    type: "text",
+    placeholder: "нпр. 02 3111 222 / 070 123 456",
+    required: false,
+  },
+  {
+    id: "location_info",
+    group: "Контакт информации",
+    question: "Каде се наоѓате?",
+    subtitle: "Адреса, град, или 'онлајн' ако немате физичка локација.",
+    type: "text",
+    placeholder: "нпр. ул. Македонија 5, Скопје",
+    required: false,
+  },
+  {
+    id: "working_hours",
+    group: "Контакт информации",
+    question: "Работно време",
+    type: "text",
+    placeholder: "нпр. Пон-Пет 09:00-17:00, Саб 10:00-14:00",
+    required: false,
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // SCREEN 4: Вашата приказна (soul of the business)
+  // ══════════════════════════════════════════════════════════════
+  {
+    id: "unique_value",
+    group: "Вашата приказна",
+    question: (a) => {
+      const ind = a.industry as string;
+      const map: Record<string, string> = {
+        retail: "Што ја издвојува вашата продавница од останатите?",
+        hospitality: "Што го прави вашиот објект посебен за гостите?",
+        healthcare: "Зошто пациентите ја избираат вашата ординација/клиника?",
+        education: "Што го прави вашето училиште/курс подобар од другите?",
+        realestate: "Зошто клиентите ја избираат вашата агенција?",
+        finance: "Што ве издвојува од другите финансиски институции?",
+        beauty: "Што го прави вашиот салон посебен?",
+        automotive: "Зошто клиентите доаѓаат токму кај вас?",
+        legal: "Зошто клиентите ја избираат вашата канцеларија?",
+        it_services: "Што ве издвојува од другите ИТ компании?",
+        food: "Што го прави вашиот ресторан/кафуле уникатен?",
+      };
+      return map[ind] || "Што го прави вашиот бизнис посебен?";
+    },
+    subtitle: (a) => {
+      const ind = a.industry as string;
+      const map: Record<string, string> = {
+        retail: "Ексклузивни брендови, цени, квалитет, брза испорака...?",
+        hospitality: "Локација, услуга, атмосфера, автентично искуство...?",
+        healthcare: "Искуство, технологија, грижа, достапност...?",
+        education: "Методологија, резултати, практична работа, менторство...?",
+        realestate: "Познавање на пазарот, персонален пристап, портфолио...?",
+        finance: "Доверба, транспарентност, персонален пристап...?",
+        beauty: "Мајстори, производи, техники, атмосфера...?",
+        automotive: "Искуство, оригинални делови, гаранција, брзина...?",
+        legal: "Искуство, специјализација, успешност, дискреција...?",
+        it_services: "Технологија, тим, резултати, иновативност...?",
+        food: "Рецепти, состојки, атмосфера, традиција...?",
+      };
+      return map[ind] || "Што ве издвојува од конкуренцијата?";
+    },
+    type: "textarea",
+    placeholder: (a) => {
+      const ind = a.industry as string;
+      const map: Record<string, string> = {
+        retail: "нпр. Нудиме ексклузивни брендови кои не можете да ги најдете на друго место во Македонија, со бесплатна испорака за 24 часа.",
+        healthcare: "нпр. Имаме 20 години искуство, најнова опрема и индивидуален пристап кон секој пациент.",
+        beauty: "нпр. Работиме само со премиум козметика, нашите мајстори имаат 10+ години искуство и редовно се обучуваат.",
+        food: "нпр. Користиме само свежи, домашни состојки. Нашите рецепти се традиционални, пренесени од три генерации.",
+        legal: "нпр. Имаме 15 години искуство во корпоративно право, со над 500 успешно завршени случаи.",
+        automotive: "нпр. Овластен сервис за BMW и Mercedes, со оригинални делови и 2 години гаранција на секој сервис.",
+      };
+      return map[ind] || "нпр. Нашата предност е...";
+    },
+    required: false,
+  },
+  {
+    id: "customer_trust",
+    group: "Вашата приказна",
+    question: (a) => {
+      const ind = a.industry as string;
+      const map: Record<string, string> = {
+        healthcare: "Какво искуство и кредибилитет имате?",
+        legal: "Какво искуство и специјализација имате?",
+        finance: "Какви гаранции и лиценци имате?",
+        education: "Какви резултати постигнуваат вашите ученици/студенти?",
+        it_services: "Можете ли да споделите клучни проекти или клиенти?",
+      };
+      return map[ind] || "Зошто клиентите ви веруваат?";
+    },
+    subtitle: (a) => {
+      const ind = a.industry as string;
+      const map: Record<string, string> = {
+        healthcare: "Сертификати, години искуство, број на задоволни пациенти...",
+        legal: "Години пракса, број на случаи, области на експертиза...",
+        finance: "Лиценци, регулаторни одобренија, партнерства...",
+        education: "Статистики за вработување, сертификати, рангирања...",
+        it_services: "Портфолио, познати клиенти, технолошки партнерства...",
+      };
+      return map[ind] || "Искуство, задоволни клиенти, награди, сертификати...";
+    },
+    type: "textarea",
+    placeholder: (a) => {
+      const ind = a.industry as string;
+      const map: Record<string, string> = {
+        healthcare: "нпр. Д-р Петровски има 20 години искуство и е член на Европското здружение за кардиологија. Над 5000 задоволни пациенти.",
+        legal: "нпр. Тим од 5 адвокати со просечно 12 години искуство. Специјалисти за трговско и имотно право. 95% успешност.",
+        finance: "нпр. Лиценциран од НБРМ, 10 години на пазарот, над 2000 задоволни клиенти.",
+        education: "нпр. 90% од нашите студенти се вработуваат во рок од 3 месеци. Партнери сме со 15 ИТ компании.",
+        it_services: "нпр. Работевме со Телеком, А1 и неколку банки. Microsoft Gold Partner. Тим од 20 инженери.",
+      };
+      return map[ind] || "нпр. Имаме 10+ години искуство и над 1000 задоволни клиенти...";
+    },
+    required: false,
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // SCREEN 5: Детали за бизнисот (industry-specific, 2-3 per screen)
   // ══════════════════════════════════════════════════════════════
 
   // ── RETAIL ──
@@ -149,7 +239,6 @@ export const wizardQuestions: WizardQuestion[] = [
     id: "product_categories",
     group: "Детали за бизнисот",
     question: "Кои категории на производи ги продавате?",
-    subtitle: "Изберете ги сите релевантни категории.",
     type: "checkbox",
     options: [
       { value: "clothing", label: "Облека и обувки" },
@@ -161,7 +250,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "kids", label: "Детски производи" },
       { value: "other_products", label: "Друго" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "retail",
   },
   {
@@ -176,13 +265,13 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "pickup", label: "Подигање во продавница" },
       { value: "no_shipping", label: "Немаме испорака (само физичка продавница)" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "retail",
   },
   {
     id: "return_policy",
     group: "Детали за бизнисот",
-    question: "Каква е вашата политика за враќање?",
+    question: "Политика за враќање",
     type: "radio",
     options: [
       { value: "flexible", label: "Флексибилна", description: "30+ дена, без прашања" },
@@ -190,7 +279,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "strict", label: "Строга", description: "Само за неисправни производи" },
       { value: "no_returns", label: "Без враќање", description: "Финална продажба" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "retail",
   },
 
@@ -213,7 +302,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "pharmacy", label: "Аптека" },
       { value: "other_medical", label: "Друго" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "healthcare",
   },
   {
@@ -223,24 +312,24 @@ export const wizardQuestions: WizardQuestion[] = [
     type: "radio",
     options: [
       { value: "fzo", label: "Да — ФЗО (државно)", description: "Примаме со упат од матичен лекар" },
-      { value: "private_insurance", label: "Да — приватно осигурување", description: "Триглав, Сава, Кроација..." },
+      { value: "private_insurance", label: "Да — приватно осигурување" },
       { value: "both", label: "И државно и приватно" },
       { value: "no_insurance", label: "Не — само приватно плаќање" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "healthcare",
   },
   {
     id: "emergency_protocol",
     group: "Детали за бизнисот",
-    question: "Дали имате итна служба или дежурства?",
+    question: "Итна служба / дежурства?",
     type: "radio",
     options: [
       { value: "yes_emergency", label: "Да, имаме итна служба 24/7" },
-      { value: "on_call", label: "Имаме дежурен телефон надвор од работно време" },
+      { value: "on_call", label: "Дежурен телефон надвор од работно време" },
       { value: "no_emergency", label: "Не — само во работно време" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "healthcare",
   },
 
@@ -261,27 +350,27 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "makeup", label: "Шминка" },
       { value: "body_treatment", label: "Третман на тело" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "beauty",
   },
   {
     id: "booking_method",
     group: "Детали за бизнисот",
-    question: "Како клиентите закажуваат термини кај вас?",
+    question: "Како клиентите закажуваат термини?",
     type: "radio",
     options: [
-      { value: "phone_booking", label: "Телефонски", description: "Клиентите се јавуваат" },
-      { value: "online_booking", label: "Онлајн систем", description: "Имаме онлајн букинг" },
-      { value: "walk_in", label: "Без закажување", description: "Прв дојден - прв услужен" },
-      { value: "mixed_booking", label: "Комбинирано", description: "Телефон + онлајн + walk-in" },
+      { value: "phone_booking", label: "Телефонски" },
+      { value: "online_booking", label: "Онлајн систем" },
+      { value: "walk_in", label: "Без закажување" },
+      { value: "mixed_booking", label: "Комбинирано (телефон + онлајн + walk-in)" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "beauty",
   },
   {
     id: "cancellation_policy",
     group: "Детали за бизнисот",
-    question: "Каква е политиката за откажување на термини?",
+    question: "Политика за откажување термини",
     type: "radio",
     options: [
       { value: "flexible_cancel", label: "Флексибилна — откажете кога сакате" },
@@ -289,7 +378,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "48h_cancel", label: "48 часа однапред" },
       { value: "no_cancel", label: "Без откажување — плаќање однапред" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "beauty",
   },
 
@@ -309,7 +398,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "vegan", label: "Веган / Вегетаријанско" },
       { value: "bakery", label: "Пекара / Бурекџилница" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "food",
   },
   {
@@ -324,20 +413,20 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "dine_in", label: "Јадење во ресторан" },
       { value: "catering", label: "Кетеринг / Нарачки за настани" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "food",
   },
   {
     id: "reservation_support",
     group: "Детали за бизнисот",
-    question: "Дали примате резервации за маси?",
+    question: "Примате резервации за маси?",
     type: "radio",
     options: [
       { value: "yes_reservation", label: "Да — телефонски и онлајн" },
       { value: "phone_only_res", label: "Да — само телефонски" },
       { value: "no_reservation", label: "Не — прв дојден, прв услужен" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "food",
   },
 
@@ -355,7 +444,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "villa", label: "Вила / Куќа" },
       { value: "hostel", label: "Хостел / Дормитори" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "hospitality",
   },
   {
@@ -373,7 +462,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "breakfast", label: "Вклучен појадок" },
       { value: "transfer", label: "Аеродромски трансфер" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "hospitality",
   },
   {
@@ -388,7 +477,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "airbnb", label: "Airbnb" },
       { value: "tripadvisor", label: "TripAdvisor" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "hospitality",
   },
 
@@ -408,7 +497,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "kids_programs", label: "Програми за деца" },
       { value: "online_courses", label: "Онлајн курсеви" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "education",
   },
   {
@@ -417,12 +506,12 @@ export const wizardQuestions: WizardQuestion[] = [
     question: "Како функционира процесот на запишување?",
     type: "radio",
     options: [
-      { value: "online_enrollment", label: "Целосно онлајн", description: "Пријава и плаќање преку веб" },
-      { value: "in_person", label: "Лично", description: "Треба да дојдат во просториите" },
-      { value: "hybrid_enrollment", label: "Комбинирано", description: "Пријава онлајн, документи лично" },
-      { value: "open_enrollment", label: "Без формална пријава", description: "Слободен пристап" },
+      { value: "online_enrollment", label: "Целосно онлајн" },
+      { value: "in_person", label: "Лично" },
+      { value: "hybrid_enrollment", label: "Комбинирано (онлајн + лично)" },
+      { value: "open_enrollment", label: "Слободен пристап без формална пријава" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "education",
   },
 
@@ -440,7 +529,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "land", label: "Земјиште" },
       { value: "new_construction", label: "Новоградба" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "realestate",
   },
   {
@@ -449,7 +538,7 @@ export const wizardQuestions: WizardQuestion[] = [
     question: "Во кои градови/региони работите?",
     type: "text",
     placeholder: "нпр. Скопје, Битола, Охрид",
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "realestate",
   },
 
@@ -469,7 +558,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "insurance_auto", label: "Авто осигурување" },
       { value: "rent_a_car", label: "Рент-а-кар" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "automotive",
   },
   {
@@ -498,21 +587,20 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "accounting", label: "Сметководство" },
       { value: "tax_consulting", label: "Даночно советување" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "finance",
   },
   {
     id: "regulatory_note",
     group: "Детали за бизнисот",
-    question: "Дали chatbot-от треба да напомене дека не дава финансиски совети?",
-    subtitle: "Регулаторен disclaimer — препорачливо за финансиски институции.",
+    question: "Chatbot-от да напомене дека не дава финансиски совети?",
     type: "radio",
     options: [
-      { value: "yes_disclaimer", label: "Да — секогаш да напомене", description: "\"Ова не е финансиски совет\"" },
+      { value: "yes_disclaimer", label: "Да — секогаш" },
       { value: "when_relevant", label: "Само кога е релевантно" },
       { value: "no_disclaimer", label: "Не е потребно" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "finance",
   },
 
@@ -532,7 +620,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "notary", label: "Нотарски услуги" },
       { value: "immigration", label: "Имиграција / Визи" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "legal",
   },
   {
@@ -546,7 +634,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "both_legal", label: "И лично и онлајн" },
       { value: "free_initial", label: "Прва консултација бесплатна" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "legal",
   },
 
@@ -557,12 +645,12 @@ export const wizardQuestions: WizardQuestion[] = [
     question: "Каков бизнис модел имате?",
     type: "radio",
     options: [
-      { value: "saas", label: "SaaS (софтвер како услуга)", description: "Месечна/годишна претплата" },
-      { value: "agency", label: "Агенција / Фриленс", description: "Проектни услуги" },
-      { value: "consulting", label: "ИТ консалтинг", description: "Советодавни услуги" },
-      { value: "product", label: "Продукт компанија", description: "Еднократна продажба" },
+      { value: "saas", label: "SaaS (софтвер како услуга)" },
+      { value: "agency", label: "Агенција / Фриленс" },
+      { value: "consulting", label: "ИТ консалтинг" },
+      { value: "product", label: "Продукт компанија" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "it_services",
   },
   {
@@ -580,7 +668,7 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "data_analytics", label: "Аналитика / BI" },
       { value: "support_maintenance", label: "Поддршка и одржување" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "it_services",
   },
 
@@ -592,16 +680,16 @@ export const wizardQuestions: WizardQuestion[] = [
     subtitle: "Chatbot-от ќе ги користи овие информации за одговарање.",
     type: "textarea",
     placeholder: "нпр. Ние нудиме услуги за..., Нашите главни производи се...",
-    required: true,
+    required: false,
     showWhen: (a) => a.industry === "other",
   },
 
   // ══════════════════════════════════════════════════════════════
-  // GROUP 4: Цел на chatbot-от
+  // SCREEN 5: Цел и теми (bot_purpose + topic questions)
   // ══════════════════════════════════════════════════════════════
   {
     id: "bot_purpose",
-    group: "Цел на chatbot-от",
+    group: "Цел и теми",
     question: (a) => {
       const ind = a.industry as string;
       const industryNames: Record<string, string> = {
@@ -620,7 +708,6 @@ export const wizardQuestions: WizardQuestion[] = [
       const name = industryNames[ind] || "вашиот бизнис";
       return `Која е главната цел на chatbot-от за ${name}?`;
     },
-    subtitle: "Врз основа на ова, ќе добиете специфични предлози за вашата дејност.",
     type: "radio",
     options: [
       { value: "customer_support", label: "Корисничка поддршка", description: "Одговарање на прашања, решавање проблеми" },
@@ -632,88 +719,81 @@ export const wizardQuestions: WizardQuestion[] = [
     required: true,
   },
 
-  // ══════════════════════════════════════════════════════════════
-  // GROUP 5: Purpose × Industry specific questions
-  // ══════════════════════════════════════════════════════════════
-
   // ── CUSTOMER SUPPORT: industry-specific topics ──
   {
     id: "support_topics_retail",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "За кои теми најчесто ве прашуваат клиентите?",
-    subtitle: "Изберете ги сите теми — chatbot-от ќе биде обучен за нив.",
     type: "checkbox",
     options: [
       { value: "order_status", label: "Статус на нарачка" },
-      { value: "shipping_info", label: "Испорака и трошоци за достава" },
-      { value: "returns_exchange", label: "Враќање и замена на производи" },
+      { value: "shipping_info", label: "Испорака и трошоци" },
+      { value: "returns_exchange", label: "Враќање и замена" },
       { value: "product_availability", label: "Достапност на производи" },
-      { value: "pricing_discounts", label: "Цени, попусти и промоции" },
+      { value: "pricing_discounts", label: "Цени и попусти" },
       { value: "payment_methods", label: "Начини на плаќање" },
       { value: "warranty", label: "Гаранција" },
       { value: "size_guide", label: "Табела за големини" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "customer_support" && a.industry === "retail",
   },
   {
     id: "support_topics_healthcare",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "За кои теми најчесто ве контактираат пациентите?",
     type: "checkbox",
     options: [
       { value: "appointment_availability", label: "Слободни термини" },
-      { value: "preparation", label: "Подготовка за преглед/процедура" },
+      { value: "preparation", label: "Подготовка за преглед" },
       { value: "results", label: "Резултати од анализи" },
-      { value: "pricing_medical", label: "Ценовник на услуги" },
+      { value: "pricing_medical", label: "Ценовник" },
       { value: "insurance_coverage", label: "Покриеност со осигурување" },
       { value: "referral", label: "Упати и документација" },
       { value: "medication", label: "Лекови и рецепти" },
       { value: "emergency_info", label: "Итни случаи" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "customer_support" && a.industry === "healthcare",
   },
   {
     id: "support_topics_food",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "За кои теми најчесто прашуваат гостите?",
     type: "checkbox",
     options: [
       { value: "menu_info", label: "Мени и цени" },
       { value: "delivery_time", label: "Време на достава" },
       { value: "allergens", label: "Алергени и состојки" },
-      { value: "reservation_info", label: "Резервации за маси" },
-      { value: "catering_info", label: "Кетеринг за настани" },
+      { value: "reservation_info", label: "Резервации" },
+      { value: "catering_info", label: "Кетеринг" },
       { value: "opening_hours", label: "Работно време" },
-      { value: "special_offers", label: "Дневни понуди / Промоции" },
+      { value: "special_offers", label: "Дневни понуди" },
       { value: "complaint", label: "Рекламации" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "customer_support" && a.industry === "food",
   },
   {
     id: "support_topics_beauty",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "За кои теми најчесто ве прашуваат клиентите?",
     type: "checkbox",
     options: [
       { value: "available_slots", label: "Слободни термини" },
       { value: "treatment_info", label: "Детали за третмани" },
       { value: "pricing_beauty", label: "Ценовник" },
-      { value: "cancel_reschedule", label: "Откажување / Преместување термин" },
+      { value: "cancel_reschedule", label: "Откажување / Преместување" },
       { value: "aftercare", label: "Нега по третман" },
       { value: "products_beauty", label: "Производи за продажба" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "customer_support" && a.industry === "beauty",
   },
-  // Generic support (for industries without specific support questions)
   {
     id: "support_topics",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "За кои теми најчесто ве прашуваат клиентите?",
-    subtitle: "Изберете ги сите теми кои се релевантни.",
     type: "checkbox",
     options: [
       { value: "pricing", label: "Цени и попусти" },
@@ -724,97 +804,96 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "returns", label: "Враќање и рекламации" },
       { value: "general", label: "Општи прашања" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "customer_support" && !["retail", "healthcare", "food", "beauty"].includes(a.industry as string),
   },
 
   // ── SALES: industry-specific ──
   {
     id: "sales_goals_retail",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Како треба chatbot-от да помага со продажба?",
     type: "checkbox",
     options: [
-      { value: "recommend_products", label: "Препорачај производи по потреби" },
-      { value: "show_promotions", label: "Прикажи актуелни промоции" },
+      { value: "recommend_products", label: "Препорачај производи" },
+      { value: "show_promotions", label: "Прикажи промоции" },
       { value: "compare_products", label: "Споредба на производи" },
-      { value: "upsell_cross", label: "Предложи дополнителни производи (upsell/cross-sell)" },
+      { value: "upsell_cross", label: "Предложи дополнителни производи" },
       { value: "collect_leads", label: "Собери email за newsletter" },
       { value: "cart_recovery", label: "Потсети за напуштена кошничка" },
       { value: "gift_suggestions", label: "Предлози за подароци" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "sales" && a.industry === "retail",
   },
   {
     id: "sales_goals_healthcare",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Како треба chatbot-от да генерира нови пациенти?",
     type: "checkbox",
     options: [
       { value: "promote_services", label: "Промовирај услуги и пакети" },
       { value: "free_consultation", label: "Понуди бесплатна консултација" },
       { value: "collect_patient_info", label: "Собери информации за нов пациент" },
-      { value: "health_packages", label: "Прикажи здравствени пакети/програми" },
-      { value: "insurance_info", label: "Информирај за покриеност со осигурување" },
+      { value: "health_packages", label: "Здравствени пакети" },
+      { value: "insurance_info", label: "Покриеност со осигурување" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "sales" && a.industry === "healthcare",
   },
   {
     id: "sales_goals_food",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Како треба chatbot-от да зголеми продажбата?",
     type: "checkbox",
     options: [
       { value: "daily_specials", label: "Промовирај дневни понуди" },
       { value: "combo_meals", label: "Предложи комбо мени" },
-      { value: "loyalty_program", label: "Информирај за програма за лојалност" },
-      { value: "catering_promo", label: "Промовирај кетеринг за настани" },
-      { value: "new_items", label: "Најави нови производи од менито" },
+      { value: "loyalty_program", label: "Програма за лојалност" },
+      { value: "catering_promo", label: "Промовирај кетеринг" },
+      { value: "new_items", label: "Најави нови производи" },
       { value: "upsell_drinks", label: "Предложи пијалоци и десерти" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "sales" && a.industry === "food",
   },
   {
     id: "sales_goals_realestate",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Како треба chatbot-от да генерира клиенти?",
     type: "checkbox",
     options: [
-      { value: "property_search", label: "Помогни во пребарување недвижности" },
+      { value: "property_search", label: "Помогни во пребарување" },
       { value: "schedule_viewing", label: "Закажи разгледување" },
-      { value: "collect_buyer_info", label: "Собери информации за купувач (лид)" },
-      { value: "price_estimation", label: "Дај проценка на цена" },
-      { value: "mortgage_info", label: "Информирај за хипотечни партнери" },
-      { value: "neighborhood_info", label: "Информации за локалитети/населби" },
+      { value: "collect_buyer_info", label: "Собери информации (лид)" },
+      { value: "price_estimation", label: "Проценка на цена" },
+      { value: "mortgage_info", label: "Хипотечни партнери" },
+      { value: "neighborhood_info", label: "Информации за локалитети" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "sales" && a.industry === "realestate",
   },
-  // Generic sales
   {
     id: "sales_goals",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Што треба chatbot-от да прави при продажба?",
     type: "checkbox",
     options: [
       { value: "recommend_products", label: "Препорачај производи/услуги" },
-      { value: "collect_leads", label: "Собери контакт информации (лид)" },
+      { value: "collect_leads", label: "Собери контакт информации" },
       { value: "answer_pricing", label: "Одговарај на прашања за цени" },
-      { value: "upsell", label: "Предложи дополнителни производи/услуги" },
+      { value: "upsell", label: "Предложи дополнителни производи" },
       { value: "schedule_demo", label: "Закажи демо/консултација" },
       { value: "redirect_human", label: "Пренасочи кон продажен тим" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "sales" && !["retail", "healthcare", "food", "realestate"].includes(a.industry as string),
   },
 
   // ── APPOINTMENTS: industry-specific ──
   {
     id: "appointment_details_healthcare",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Какви термини закажува chatbot-от?",
     type: "checkbox",
     options: [
@@ -825,12 +904,12 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "vaccination", label: "Вакцинација" },
       { value: "therapy", label: "Терапија / Физикална" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "appointments" && a.industry === "healthcare",
   },
   {
     id: "appointment_details_beauty",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Какви термини закажува chatbot-от?",
     type: "checkbox",
     options: [
@@ -841,12 +920,12 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "full_package", label: "Пакет третмани" },
       { value: "bridal", label: "Невестински пакет" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "appointments" && a.industry === "beauty",
   },
   {
     id: "appointment_details_food",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Какви резервации закажува chatbot-от?",
     type: "checkbox",
     options: [
@@ -855,12 +934,12 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "catering_booking", label: "Нарачка за кетеринг" },
       { value: "group_booking", label: "Резервација за група" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "appointments" && a.industry === "food",
   },
   {
     id: "appointment_details_auto",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Какви термини закажува chatbot-от?",
     type: "checkbox",
     options: [
@@ -870,13 +949,12 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "inspection", label: "Технички преглед" },
       { value: "estimate", label: "Проценка на трошоци" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "appointments" && a.industry === "automotive",
   },
-  // Generic appointments
   {
     id: "appointment_details",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Какви термини закажува chatbot-от?",
     type: "checkbox",
     options: [
@@ -885,14 +963,14 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "meeting", label: "Состанок" },
       { value: "reservation", label: "Резервација" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "appointments" && !["healthcare", "beauty", "food", "automotive"].includes(a.industry as string),
   },
 
   // ── INFO/FAQ: industry-specific ──
   {
     id: "info_scope_education",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "За што треба chatbot-от да дава информации?",
     type: "checkbox",
     options: [
@@ -904,48 +982,47 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "certificates_info", label: "Сертификати и дипломи" },
       { value: "location_facilities", label: "Локација и просторни услови" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "info_faq" && a.industry === "education",
   },
   {
     id: "info_scope_finance",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "За кои теми треба chatbot-от да информира?",
     type: "checkbox",
     options: [
-      { value: "products_finance", label: "Финансиски производи и услуги" },
+      { value: "products_finance", label: "Финансиски производи" },
       { value: "rates_info", label: "Каматни стапки и услови" },
       { value: "apply_process", label: "Процес на аплицирање" },
       { value: "documents_needed", label: "Потребна документација" },
-      { value: "branches_atm", label: "Локации на филијали/банкомати" },
+      { value: "branches_atm", label: "Филијали/банкомати" },
       { value: "online_banking", label: "Онлајн банкарство" },
-      { value: "claims_process", label: "Процес на пријава на штета" },
+      { value: "claims_process", label: "Пријава на штета" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "info_faq" && a.industry === "finance",
   },
-  // Generic info/FAQ
   {
     id: "info_scope",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "За што треба chatbot-от да дава информации?",
     type: "checkbox",
     options: [
-      { value: "company_info", label: "За компанијата (историја, мисија)" },
+      { value: "company_info", label: "За компанијата" },
       { value: "products_services", label: "За производи/услуги" },
       { value: "pricing", label: "Ценовник и пакети" },
       { value: "location_hours", label: "Локација и работно време" },
       { value: "policies", label: "Политики (враќање, гаранција)" },
       { value: "careers", label: "Вработување / Кариера" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "info_faq" && !["education", "finance"].includes(a.industry as string),
   },
 
-  // ── ONBOARDING (generic — works across industries) ──
+  // ── ONBOARDING ──
   {
     id: "onboarding_scope",
-    group: "Детали за улогата",
+    group: "Цел и теми",
     question: "Со што треба chatbot-от да им помогне на новите корисници?",
     type: "checkbox",
     options: [
@@ -955,16 +1032,16 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "faq", label: "Најчесто поставувани прашања" },
       { value: "documentation", label: "Упатства и документација" },
     ],
-    required: true,
+    required: false,
     showWhen: (a) => a.bot_purpose === "onboarding",
   },
 
   // ══════════════════════════════════════════════════════════════
-  // GROUP 6: Однесување
+  // SCREEN 6: Стил и однесување (3 questions)
   // ══════════════════════════════════════════════════════════════
   {
     id: "tone",
-    group: "Однесување",
+    group: "Стил и однесување",
     question: "Каков тон треба да користи chatbot-от?",
     type: "radio",
     options: [
@@ -973,70 +1050,79 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "casual", label: "Неформален", description: "Опуштен, разговорен стил" },
       { value: "formal", label: "Многу формален", description: "Институционален, званичен" },
     ],
-    required: true,
+    required: false,
+    defaultValue: () => "friendly",
   },
   {
     id: "response_length",
-    group: "Однесување",
+    group: "Стил и однесување",
     question: "Колку долги треба да бидат одговорите?",
     type: "radio",
     options: [
-      { value: "concise", label: "Кратки и директни", description: "1-2 реченици, право на поента" },
+      { value: "concise", label: "Кратки и директни", description: "1-2 реченици" },
       { value: "balanced", label: "Балансирани", description: "Доволно детали без да е предолго" },
       { value: "detailed", label: "Детални", description: "Целосни објаснувања со примери" },
     ],
-    required: true,
+    required: false,
+    defaultValue: () => "balanced",
   },
   {
     id: "unknown_answer",
-    group: "Однесување",
-    question: "Што да прави chatbot-от кога не го знае одговорот?",
+    group: "Стил и однесување",
+    question: "Кога не го знае одговорот?",
     type: "radio",
     options: [
-      { value: "admit_redirect", label: "Признај и пренасочи кон човек", description: "\"Не сум сигурен, ве поврзувам со тимот\"" },
-      { value: "admit_contact", label: "Признај и остави контакт", description: "\"За ова контактирајте нè на...\"" },
-      { value: "try_help", label: "Пробај да помогне", description: "Ќе даде најблизок одговор од базата на знаење" },
-      { value: "collect_question", label: "Собери го прашањето", description: "\"Ќе го проследам вашето прашање до тимот\"" },
+      { value: "admit_redirect", label: "Признај и пренасочи кон човек" },
+      { value: "admit_contact", label: "Признај и остави контакт" },
+      { value: "try_help", label: "Пробај да помогне со тоа што го има" },
+      { value: "collect_question", label: "Собери го прашањето за тимот" },
     ],
-    required: true,
+    required: false,
+    defaultValue: () => "admit_contact",
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // SCREEN 7: Персонализација (free-text customization)
+  // ══════════════════════════════════════════════════════════════
+  {
+    id: "custom_instructions",
+    group: "Персонализација",
+    question: "Дали имате специјални инструкции за chatbot-от?",
+    subtitle: "Напишете конкретни правила или однесување. Пример: 'Секогаш понуди бесплатна достава за нарачки над 2000 ден.' или 'Кога клиент прашува за цена, упати го да се јави на телефон.'",
+    type: "textarea",
+    placeholder: "нпр. Кога клиентот прашува за попуст, понуди 10% за прва нарачка. Никогаш не споменувај ги конкурентите...",
+    required: false,
   },
   {
-    id: "escalation_contact",
-    group: "Однесување",
-    question: "Наведете контакт за пренасочување.",
-    subtitle: "Chatbot-от ќе ги упати клиентите на овој контакт кога не може да помогне.",
-    type: "text",
-    placeholder: "нпр. info@kompanija.mk / 02 3111 222",
-    required: true,
-    showWhen: (a) => a.unknown_answer === "admit_redirect" || a.unknown_answer === "admit_contact",
+    id: "custom_faq",
+    group: "Персонализација",
+    question: "Најчести прашања и одговори",
+    subtitle: "Внесете прашања што ги добивате често, заедно со точните одговори. Chatbot-от ќе ги користи.",
+    type: "textarea",
+    placeholder: "П: Дали имате паркинг?\nО: Да, имаме бесплатен паркинг зад зградата.\n\nП: Колку чини достава?\nО: Достава е бесплатна за нарачки над 1500 ден.",
+    required: false,
   },
   {
-    id: "restricted_topics",
-    group: "Однесување",
-    question: "Дали chatbot-от треба да избегнува некои теми?",
-    type: "checkbox",
-    options: [
-      { value: "no_competitors", label: "Да не споменува конкуренти" },
-      { value: "no_pricing_negotiation", label: "Да не преговара за цени" },
-      { value: "no_legal_advice", label: "Да не дава правни совети" },
-      { value: "no_medical_advice", label: "Да не дава медицински совети" },
-      { value: "no_personal_opinions", label: "Да не дава лични мислења" },
-      { value: "none", label: "Нема ограничувања" },
-    ],
+    id: "custom_personality",
+    group: "Персонализација",
+    question: "Како сакате да звучи вашиот chatbot?",
+    subtitle: "Опишете ја личноста на chatbot-от со ваши зборови — дали треба да биде шеговит, строг, формален, да користи емотикони итн.",
+    type: "textarea",
+    placeholder: "нпр. Да биде пријателски но професионален, да користи емотикони повремено, да се обраќа со 'Вие'...",
     required: false,
   },
 
   // ══════════════════════════════════════════════════════════════
-  // GROUP 7: Финализирај
+  // SCREEN 8: Финализирај (2 questions)
   // ══════════════════════════════════════════════════════════════
   {
     id: "greeting_message",
     group: "Финализирај",
     question: "Каков поздрав да користи chatbot-от?",
-    subtitle: "Ова е првата порака што клиентот ја гледа кога ќе го отвори чатот.",
+    subtitle: "Првата порака што клиентот ја гледа кога ќе го отвори чатот.",
     type: "textarea",
     placeholder: "нпр. Здраво! Како можам да ви помогнам денес?",
-    required: true,
+    required: false,
     defaultValue: (a) => {
       const name = a.business_name as string || "нашата компанија";
       const purpose = a.bot_purpose as string;
@@ -1052,18 +1138,14 @@ export const wizardQuestions: WizardQuestion[] = [
         if (industry === "realestate") return `Добредојдовте! Дали барате стан, куќа или деловен простор? Јас сум тука да ви помогнам.`;
         return `Добредојдовте во ${name}! Со задоволство ќе ви помогнам да го најдете вистинскиот производ.`;
       }
-      if (purpose === "info_faq") {
-        return `Здраво! Имате прашање за ${name}? Јас сум тука да ви помогнам со информации.`;
-      }
+      if (purpose === "info_faq") return `Здраво! Имате прашање за ${name}? Јас сум тука да ви помогнам со информации.`;
       if (purpose === "appointments") {
         if (industry === "healthcare") return `Здраво! Дали сакате да закажете преглед кај ${name}? Ќе ви помогнам да најдете слободен термин.`;
         if (industry === "beauty") return `Здраво! Дали сакате да закажете термин кај ${name}? Кажете ми каков третман ве интересира.`;
         if (industry === "food") return `Здраво! Дали сакате да резервирате маса кај ${name}? Кажете ми за колку лица и кога.`;
         return `Здраво! Дали сакате да закажете термин кај ${name}? Јас ќе ви помогнам.`;
       }
-      if (purpose === "onboarding") {
-        return `Добредојдовте во ${name}! Јас ќе ви помогнам да започнете. Што сакате да дознаете прво?`;
-      }
+      if (purpose === "onboarding") return `Добредојдовте во ${name}! Јас ќе ви помогнам да започнете. Што сакате да дознаете прво?`;
       return `Здраво! Како можам да ви помогнам денес?`;
     },
   },
@@ -1078,7 +1160,8 @@ export const wizardQuestions: WizardQuestion[] = [
       { value: "en", label: "Англиски", description: "Одговара само на англиски" },
       { value: "sq", label: "Албански", description: "Одговара само на албански" },
     ],
-    required: true,
+    required: false,
+    defaultValue: () => "mk",
   },
 ];
 
@@ -1087,6 +1170,23 @@ export const wizardQuestions: WizardQuestion[] = [
  */
 export function getVisibleQuestions(answers: WizardAnswers): WizardQuestion[] {
   return wizardQuestions.filter((q) => !q.showWhen || q.showWhen(answers));
+}
+
+/**
+ * Returns visible questions grouped by their group name.
+ */
+export function getVisibleGroups(answers: WizardAnswers): WizardGroup[] {
+  const visible = getVisibleQuestions(answers);
+  const groups: WizardGroup[] = [];
+  for (const q of visible) {
+    const last = groups[groups.length - 1];
+    if (last && last.name === q.group) {
+      last.questions.push(q);
+    } else {
+      groups.push({ name: q.group, questions: [q] });
+    }
+  }
+  return groups;
 }
 
 /**
