@@ -1,43 +1,45 @@
 import { motion } from "framer-motion";
-import { Database, Palette, Rocket } from "lucide-react";
+import { Bot, Database, Share2 } from "lucide-react";
+import { useLanguage } from "@/lib/language";
 
-const steps = [
-  {
-    num: "01",
-    icon: Database,
-    title: "Додадете ги вашите податоци",
-    desc: "Поставете FAQ, документи или веб-страна. AI автоматски учи од вашите информации.",
+const t = {
+  en: {
+    label: "How It Works",
+    title: "3 Steps to Your Facebook Chatbot",
+    subtitle: "No coding required. No technical skills needed.",
+    steps: [
+      { num: "01", icon: Bot, title: "Create your chatbot", desc: "Answer a few questions about your business. Upload your FAQs, documents, or website URL." },
+      { num: "02", icon: Database, title: "Train with your content", desc: "The AI learns from your data and becomes an expert on your business, products, and services." },
+      { num: "03", icon: Share2, title: "Connect your Facebook Page", desc: "Link your Facebook Page in one click. The chatbot automatically replies to Messenger messages." },
+    ],
   },
-  {
-    num: "02",
-    icon: Palette,
-    title: "Прилагодете го ботот",
-    desc: "Изберете тон, јазик и однесување. Одговорете на неколку прашања и ботот е спремен.",
+  mk: {
+    label: "Како работи",
+    title: "3 чекори до вашиот Facebook Chatbot",
+    subtitle: "Без кодирање. Без техничко знаење.",
+    steps: [
+      { num: "01", icon: Bot, title: "Креирајте го вашиот chatbot", desc: "Одговорете на неколку прашања за вашиот бизнис. Поставете FAQ, документи или веб-страна." },
+      { num: "02", icon: Database, title: "Тренирајте со вашите податоци", desc: "AI учи од вашите информации и станува експерт за вашиот бизнис, производи и услуги." },
+      { num: "03", icon: Share2, title: "Поврзете ја вашата Facebook страница", desc: "Поврзете ја вашата страница со еден клик. Chatbot-от автоматски одговара на Messenger пораки." },
+    ],
   },
-  {
-    num: "03",
-    icon: Rocket,
-    title: "Објавете го за секунди",
-    desc: "Копирајте еден код за вашата веб-страна, или поврзете го со Facebook и Instagram.",
-  },
-];
+};
 
 const HowItWorksSection = () => {
+  const { lang } = useLanguage();
+  const c = t[lang];
+
   return (
     <section id="how-it-works" className="py-24">
       <div className="container">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <p className="text-sm font-semibold text-primary tracking-wide uppercase mb-3">Како работи</p>
-          <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
-            3 чекори. 5 минути. Готово.
-          </h2>
-          <p className="mt-4 text-muted-foreground text-lg">
-            Без техничко знаење. Без кодирање. Без чекање.
-          </p>
+          <p className="text-sm font-semibold text-primary tracking-wide uppercase mb-3">{c.label}</p>
+          <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">{c.title}</h2>
+          <p className="mt-4 text-muted-foreground text-lg">{c.subtitle}</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          {steps.map((s, i) => (
+          {c.steps.map((s, i) => (
             <motion.div
               key={s.num}
               initial={{ opacity: 0, y: 20 }}
