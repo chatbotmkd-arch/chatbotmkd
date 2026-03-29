@@ -1,3 +1,6 @@
+export const TRIAL_DAYS = 8;
+export const GRACE_DAYS = 8;
+
 export const PLAN_LIMITS = {
   0: {
     name: "Бесплатен",
@@ -5,7 +8,6 @@ export const PLAN_LIMITS = {
     maxMessages: 30, // lifetime credits
     maxSources: 2,
     maxFileSize: 2 * 1024 * 1024, // 2 MB
-    trialDays: 8,
   },
   1: {
     name: "Стартер",
@@ -13,7 +15,6 @@ export const PLAN_LIMITS = {
     maxMessages: 300, // credits per month
     maxSources: 10,
     maxFileSize: 10 * 1024 * 1024,
-    trialDays: 0,
   },
   2: {
     name: "Про",
@@ -21,7 +22,6 @@ export const PLAN_LIMITS = {
     maxMessages: 500, // credits per month
     maxSources: 50,
     maxFileSize: 50 * 1024 * 1024,
-    trialDays: 0,
   },
 } as const;
 

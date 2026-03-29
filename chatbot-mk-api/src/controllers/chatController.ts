@@ -9,7 +9,20 @@ import { AIService } from "../services/AIService";
 import { EmbeddingService } from "../services/EmbeddingService";
 import { AuthRequest } from "../types";
 import { parsePagination } from "../utils/pagination";
-import { checkMessageLimit } from "../utils/planLimits";
+import { checkMessageLimit, LimitCheckResult } from "../utils/planLimits";
+
+function getLimitErrorMessage(check: LimitCheckResult): string {
+  switch (check.status) {
+    case "trial_expired":
+      return "Вашиот бесплатен пробен период заврши. Надградете го вашиот план за да продолжите.";
+    case "grace_expired":
+      return "Вашиот grace период заврши. Контактирајте не за активирање на план.";
+    case "limit_reached":
+      return `Достигнат е лимитот на пораки (${check.used}/${check.limit}). Надградете го вашиот план.`;
+    default:
+      return "Не е дозволено испраќање пораки.";
+  }
+}
 
 // Public endpoint — used by widget
 export async function sendMessage(req: Request, res: Response): Promise<void> {
@@ -28,7 +41,7 @@ export async function sendMessage(req: Request, res: Response): Promise<void> {
 
   const limitCheck = await checkMessageLimit(team._id, team.plan);
   if (!limitCheck.allowed) {
-    throw new AppError(403, `Достигнат е лимитот на пораки (${limitCheck.used}/${limitCheck.limit}). Надградете го вашиот план.`);
+    throw new AppError(403, getLimitErrorMessage(limitCheck));
   }
 
   // Find or create conversation
@@ -107,7 +120,7 @@ export async function playgroundMessage(req: AuthRequest, res: Response): Promis
 
   const limitCheck = await checkMessageLimit(team._id, team.plan);
   if (!limitCheck.allowed) {
-    throw new AppError(403, `Достигнат е лимитот на пораки (${limitCheck.used}/${limitCheck.limit}). Надградете го вашиот план.`);
+    throw new AppError(403, getLimitErrorMessage(limitCheck));
   }
 
   const sid = sessionId || `playground:${uuidv4()}`;
@@ -168,7 +181,10 @@ export async function getUsage(req: AuthRequest, res: Response): Promise<void> {
   if (!team) throw new AppError(404, "Team not found");
 
   const limitCheck = await checkMessageLimit(team._id, team.plan);
-  res.json(limitCheck);
+  res.json({
+    ...limitCheck,
+    planName: team.plan === 0 ? "Бесплатен" : team.plan === 1 ? "Стартер" : "Про",
+  });
 }
 
 // Public endpoint — submit feedback on a message

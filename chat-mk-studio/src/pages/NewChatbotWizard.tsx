@@ -9,10 +9,10 @@ import { Bot, ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { WizardAnswers, WizardGroup } from "@/components/wizard/types";
-import { getVisibleGroups, INDUSTRY_QUESTION_IDS, PURPOSE_QUESTION_IDS } from "@/components/wizard/wizardConfig";
+import { getVisibleGroups } from "@/components/wizard/wizardConfig";
 import { buildConfig, buildSystemPrompt } from "@/components/wizard/systemPromptBuilder";
 import WizardStep from "@/components/wizard/WizardStep";
-import UrlScanStep from "@/components/wizard/UrlScanStep";
+import UrlScanStep, { ScrapedBusinessInfo } from "@/components/wizard/UrlScanStep";
 
 const purposeLabels: Record<string, string> = {
   customer_support: "Корисничка поддршка",
@@ -55,6 +55,7 @@ const NewChatbotWizard = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [showUrlScan, setShowUrlScan] = useState(true);
+  const [scannedInfo, setScannedInfo] = useState<ScrapedBusinessInfo | null>(null);
   const [answers, setAnswers] = useState<WizardAnswers>({});
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
   const [creating, setCreating] = useState(false);
@@ -67,8 +68,8 @@ const NewChatbotWizard = () => {
     if (!authLoading && !user) navigate("/login");
   }, [authLoading, user, navigate]);
 
-  const handleScanComplete = (prefilled: Partial<WizardAnswers>) => {
-    setAnswers(prefilled as WizardAnswers);
+  const handleScanComplete = (info: ScrapedBusinessInfo) => {
+    setScannedInfo(info);
     setShowUrlScan(false);
   };
 
@@ -97,31 +98,7 @@ const NewChatbotWizard = () => {
   };
 
   const handleAnswer = (questionId: string, value: string | string[]) => {
-    const newAnswers = { ...answers, [questionId]: value };
-
-    // Branching cleanup
-    if (questionId === "industry") {
-      for (const id of INDUSTRY_QUESTION_IDS) delete newAnswers[id];
-      for (const id of PURPOSE_QUESTION_IDS) delete newAnswers[id];
-    }
-    if (questionId === "bot_purpose") {
-      for (const id of PURPOSE_QUESTION_IDS) delete newAnswers[id];
-    }
-
-    setAnswers(newAnswers);
-
-    // Apply defaults for newly-visible questions in the next group
-    const newGroups = getVisibleGroups(newAnswers);
-    const nextGroupIdx = currentGroupIndex + 1;
-    if (nextGroupIdx < newGroups.length) {
-      const nextGroup = newGroups[nextGroupIdx];
-      for (const q of nextGroup.questions) {
-        if (q.defaultValue && newAnswers[q.id] === undefined) {
-          newAnswers[q.id] = q.defaultValue(newAnswers);
-        }
-      }
-      setAnswers({ ...newAnswers });
-    }
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
   const handleNext = () => {
@@ -133,7 +110,7 @@ const NewChatbotWizard = () => {
     const nextIdx = currentGroupIndex + 1;
 
     if (nextIdx >= newGroups.length) {
-      setEditedPrompt(buildSystemPrompt(answers));
+      setEditedPrompt(buildSystemPrompt(answers, scannedInfo));
       setShowReview(true);
       return;
     }

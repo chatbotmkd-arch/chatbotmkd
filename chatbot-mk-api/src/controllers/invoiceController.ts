@@ -4,7 +4,8 @@ import { User } from "../models/User";
 import { Team } from "../models/Team";
 import { AppError } from "../middleware/errorHandler";
 import { AuthRequest } from "../types";
-import { PLAN_PRICING, PLAN_LIMITS, BANK_DETAILS, PlanType } from "../config/constants";
+import { PLAN_PRICING, PLAN_LIMITS, BANK_DETAILS, GRACE_DAYS, PlanType } from "../config/constants";
+import { sendInvoiceEmail } from "../services/EmailService";
 
 /**
  * Build payment reference: XXXX-P-T
@@ -77,10 +78,32 @@ export async function createInvoice(req: AuthRequest, res: Response): Promise<vo
 
   await invoice.save();
 
+  // Start grace period when user creates an invoice (allows continued use while paying)
+  if (!team.graceEndsAt || team.graceEndsAt < new Date()) {
+    const graceEndsAt = new Date();
+    graceEndsAt.setDate(graceEndsAt.getDate() + GRACE_DAYS);
+    team.graceEndsAt = graceEndsAt;
+    await team.save();
+  }
+
+  // Send invoice email (fire-and-forget)
+  const user = await User.findById(req.user!.userId, { email: 1 }).lean();
+  if (user?.email) {
+    sendInvoiceEmail(user.email, {
+      invoiceNumber: invoice.invoiceNumber,
+      paymentReference: invoice.paymentReference,
+      plan,
+      period,
+      amount,
+      companyName,
+    }).catch(() => {});
+  }
+
   res.status(201).json({
     invoice,
     bankDetails: BANK_DETAILS,
     planName: PLAN_LIMITS[plan as PlanType].name,
+    graceEndsAt: team.graceEndsAt,
   });
 }
 

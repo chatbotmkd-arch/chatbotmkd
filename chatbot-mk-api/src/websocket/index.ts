@@ -8,7 +8,7 @@ import { Message } from "../models/Message";
 import { Team } from "../models/Team";
 import { AIService } from "../services/AIService";
 import { EmbeddingService } from "../services/EmbeddingService";
-import { checkMessageLimit } from "../utils/planLimits";
+import { checkMessageLimit, LimitCheckResult } from "../utils/planLimits";
 import { v4 as uuidv4 } from "uuid";
 
 // Simple per-socket rate limiting for WebSocket messages
@@ -94,9 +94,14 @@ export function setupWebSocket(httpServer: HttpServer): Server {
 
         const limitCheck = await checkMessageLimit(team._id, team.plan);
         if (!limitCheck.allowed) {
+          const statusMessages: Record<string, string> = {
+            trial_expired: "Вашиот бесплатен пробен период заврши. Надградете го вашиот план за да продолжите.",
+            grace_expired: "Вашиот grace период заврши. Контактирајте не за активирање на план.",
+            limit_reached: `Достигнат е лимитот на пораки (${limitCheck.used}/${limitCheck.limit}). Надградете го вашиот план.`,
+          };
           socket.emit("error", {
-            message: `Достигнат е лимитот на пораки (${limitCheck.used}/${limitCheck.limit}). Надградете го вашиот план.`,
-            code: "LIMIT_REACHED",
+            message: statusMessages[limitCheck.status] || "Не е дозволено испраќање пораки.",
+            code: limitCheck.status === "limit_reached" ? "LIMIT_REACHED" : "TRIAL_EXPIRED",
           });
           return;
         }

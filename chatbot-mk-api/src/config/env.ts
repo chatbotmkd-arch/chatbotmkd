@@ -36,4 +36,9 @@ export const env = {
   encryptionKey: requireEnv("DATABASE_ENCRYPTION_KEY", isProduction ? undefined : "dev-encryption-key-32chars-long!"),
 
   appUrl: process.env.APP_URL || "http://localhost:3001",
+
+  resendApiKey: process.env.RESEND_API_KEY || "",
+  emailFrom: process.env.EMAIL_FROM || "ChatBot MK <noreply@chatbotmkd.mk>",
+
+  adminEmails: (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
 } as const;

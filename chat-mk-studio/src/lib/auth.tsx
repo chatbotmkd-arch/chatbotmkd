@@ -13,6 +13,8 @@ interface Team {
   id: string;
   name: string;
   plan: number;
+  trialEndsAt?: string;
+  graceEndsAt?: string | null;
 }
 
 interface AuthContextType {
@@ -34,9 +36,9 @@ export const PLAN_NAMES: Record<number, string> = {
 };
 
 export const PLAN_LIMITS: Record<number, { maxMessages: number; maxChatbots: number; maxSources: number; isLifetime: boolean }> = {
-  0: { maxMessages: 20, maxChatbots: 1, maxSources: 2, isLifetime: true },
-  1: { maxMessages: 2000, maxChatbots: 3, maxSources: 10, isLifetime: false },
-  2: { maxMessages: 10000, maxChatbots: 10, maxSources: 50, isLifetime: false },
+  0: { maxMessages: 30, maxChatbots: 1, maxSources: 2, isLifetime: true },
+  1: { maxMessages: 300, maxChatbots: 3, maxSources: 10, isLifetime: false },
+  2: { maxMessages: 500, maxChatbots: 10, maxSources: 50, isLifetime: false },
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {

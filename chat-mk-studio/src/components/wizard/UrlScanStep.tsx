@@ -4,9 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Globe, Facebook, Loader2, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { api } from "@/lib/api";
-import { WizardAnswers } from "./types";
 
-interface ScrapedBusinessInfo {
+export interface ScrapedBusinessInfo {
   businessName?: string;
   industry?: string;
   businessDescription?: string;
@@ -19,7 +18,7 @@ interface ScrapedBusinessInfo {
 }
 
 interface UrlScanStepProps {
-  onScanComplete: (answers: Partial<WizardAnswers>) => void;
+  onScanComplete: (scannedInfo: ScrapedBusinessInfo) => void;
   onSkip: () => void;
 }
 
@@ -121,19 +120,7 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
 
   const handleUseResults = () => {
     if (!result) return;
-
-    const prefilled: Partial<WizardAnswers> = {};
-
-    if (result.businessName) prefilled.business_name = result.businessName;
-    if (result.industry) prefilled.industry = result.industry;
-    if (result.businessDescription) prefilled.business_description = result.businessDescription;
-    if (result.phone) prefilled.phone_number = result.phone;
-    if (result.location) prefilled.location_info = result.location;
-    if (result.workingHours) prefilled.working_hours = result.workingHours;
-    // NOTE: tone, bot_purpose, greeting_message are intentionally NOT pre-filled
-    // — those are user's creative choices
-
-    onScanComplete(prefilled);
+    onScanComplete(result);
   };
 
   return (

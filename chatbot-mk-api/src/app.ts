@@ -18,6 +18,7 @@ import invoiceRoutes from "./routes/invoices";
 import integrationRoutes from "./routes/integrations";
 import widgetRoutes from "./routes/widget";
 import scrapeRoutes from "./routes/scrape";
+import adminRoutes from "./routes/admin";
 import metaRoutes from "./routes/meta";
 
 const app = express();
@@ -82,6 +83,7 @@ app.use("/api/invoices", invoiceRoutes);
 app.use("/api/integrations", integrationRoutes);
 app.use("/api/widget", widgetRoutes);
 app.use("/api/scrape", scrapeRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Meta routes (mounted at root — webhook & OAuth paths are not under /api/)
 app.use(metaRoutes);

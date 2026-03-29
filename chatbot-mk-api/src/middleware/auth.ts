@@ -1,6 +1,7 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
+import { User } from "../models/User";
 import { AuthRequest, AuthPayload } from "../types";
 
 export function authenticate(req: AuthRequest, res: Response, next: NextFunction): void {
@@ -28,4 +29,22 @@ export function requireRole(...roles: AuthPayload["role"][]) {
     }
     next();
   };
+}
+
+/**
+ * Require the authenticated user's email to be in ADMIN_EMAILS env variable.
+ */
+export async function requireSuperAdmin(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const user = await User.findById(req.user.userId, { email: 1 }).lean();
+  if (!user || !env.adminEmails.includes(user.email.toLowerCase())) {
+    res.status(403).json({ error: "Super admin access required" });
+    return;
+  }
+
+  next();
 }

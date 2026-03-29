@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Bot, Plus, LogOut, MessageSquare, BarChart3, Settings, Loader2, Circle, AlertTriangle, ArrowUpRight } from "lucide-react";
+import { Bot, Plus, LogOut, MessageSquare, BarChart3, Settings, Loader2, Circle, AlertTriangle, ArrowUpRight, Clock } from "lucide-react";
 import { useAuth, PLAN_NAMES, PLAN_LIMITS } from "@/lib/auth";
 import { api } from "@/lib/api";
 
@@ -17,9 +17,14 @@ interface Chatbot {
 
 interface UsageData {
   allowed: boolean;
+  status: "ok" | "trial_expired" | "grace_expired" | "limit_reached";
   used: number;
   limit: number;
   plan: number;
+  planName?: string;
+  trialEndsAt?: string;
+  graceEndsAt?: string | null;
+  daysLeft?: number;
 }
 
 const statusLabels: Record<string, { text: string; color: string }> = {
@@ -119,14 +124,36 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        {/* Limit warning */}
-        {isLimitReached && (
+        {/* Trial countdown — show when trial is active and <= 3 days left */}
+        {usage && usage.status === "ok" && plan === 0 && usage.daysLeft != null && usage.daysLeft <= 3 && usage.daysLeft > 0 && (
+          <div className="mb-6 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 flex items-center gap-3">
+            <Clock className="w-5 h-5 text-yellow-600 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-yellow-700">
+                Вашиот бесплатен пробен период истекува за {usage.daysLeft} {usage.daysLeft === 1 ? "ден" : "дена"}. Надградете за непрекинато користење.
+              </p>
+            </div>
+            <Link to="/dashboard/upgrade">
+              <Button size="sm" className="gap-1 shrink-0 bg-yellow-600 text-white hover:bg-yellow-700">
+                Надгради
+                <ArrowUpRight className="w-3 h-3" />
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {/* Limit/trial expired warning */}
+        {isLimitReached && usage && (
           <div className="mb-6 bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-destructive">
-                {plan === 0
-                  ? "Го достигнавте лимитот од 20 бесплатни пораки. Вашиот chatbot нема да одговара додека не надградите."
+                {usage.status === "trial_expired"
+                  ? "Вашиот бесплатен пробен период заврши. Надградете за да продолжите да го користите chatbot-от."
+                  : usage.status === "grace_expired"
+                  ? "Вашиот grace период заврши. Контактирајте не за активирање на план."
+                  : usage.status === "limit_reached" && plan === 0
+                  ? `Го достигнавте лимитот од ${usage.limit} бесплатни пораки. Надградете за повеќе пораки.`
                   : "Го достигнавте месечниот лимит на пораки. Надградете за повеќе пораки."}
               </p>
             </div>
@@ -182,7 +209,9 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-3xl font-bold text-foreground">{planName}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {plan === 0 ? "20 пораки засекогаш" : plan === 1 ? "2,000 пораки/месец" : "10,000 пораки/месец"}
+                {plan === 0
+                  ? `30 пораки · ${usage?.daysLeft != null ? `${usage.daysLeft} дена преостануваат` : "8 дена пробен период"}`
+                  : plan === 1 ? "300 пораки/месец" : "500 пораки/месец"}
               </p>
               {plan === 0 && (
                 <Link to="/dashboard/upgrade">

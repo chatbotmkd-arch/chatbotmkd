@@ -7,6 +7,8 @@ export interface ITeam extends Document {
   plan: PlanType;
   clientNumber: number; // sequential: 1, 2, 3...
   ownerId: Types.ObjectId;
+  trialEndsAt: Date;
+  graceEndsAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,6 +19,8 @@ const teamSchema = new Schema<ITeam>(
     plan: { type: Number, enum: [0, 1, 2], default: 0 },
     clientNumber: { type: Number, unique: true, sparse: true },
     ownerId: { type: Schema.Types.ObjectId, ref: "User" },
+    trialEndsAt: { type: Date },
+    graceEndsAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

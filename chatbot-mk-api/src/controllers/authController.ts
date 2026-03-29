@@ -5,6 +5,8 @@ import { Subscription } from "../models/Subscription";
 import { generateTokens, verifyRefreshToken } from "../utils/tokens";
 import { AppError } from "../middleware/errorHandler";
 import { AuthRequest } from "../types";
+import { TRIAL_DAYS } from "../config/constants";
+import { sendWelcomeEmail } from "../services/EmailService";
 
 export async function register(req: Request, res: Response): Promise<void> {
   const { email, password, name } = req.body;
@@ -38,10 +40,14 @@ export async function register(req: Request, res: Response): Promise<void> {
   }
 
   // Create team first
+  const trialEndsAt = new Date();
+  trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DAYS);
+
   const team = new Team({
     name: `${name}'s Team`,
     plan: 0, // free plan
     ownerId: null!, // will update after user created
+    trialEndsAt,
   });
   await team.save();
 
@@ -73,6 +79,9 @@ export async function register(req: Request, res: Response): Promise<void> {
     currentPeriodEnd: periodEnd,
   });
 
+  // Send welcome email (fire-and-forget)
+  sendWelcomeEmail(user.email, user.name).catch(() => {});
+
   const tokens = generateTokens({
     userId: user._id.toString(),
     teamId: team._id.toString(),
@@ -81,7 +90,7 @@ export async function register(req: Request, res: Response): Promise<void> {
 
   res.status(201).json({
     user: { id: user._id, email: user.email, name: user.name, role: user.role, plan: user.plan },
-    team: { id: team._id, name: team.name, plan: team.plan, clientNumber: team.clientNumber },
+    team: { id: team._id, name: team.name, plan: team.plan, clientNumber: team.clientNumber, trialEndsAt: team.trialEndsAt, graceEndsAt: team.graceEndsAt },
     ...tokens,
   });
 }
@@ -140,6 +149,6 @@ export async function me(req: AuthRequest, res: Response): Promise<void> {
 
   res.json({
     user: { id: user._id, email: user.email, name: user.name, role: user.role, plan: user.plan, locale: user.locale },
-    team: team ? { id: team._id, name: team.name, plan: team.plan, clientNumber: team.clientNumber } : null,
+    team: team ? { id: team._id, name: team.name, plan: team.plan, clientNumber: team.clientNumber, trialEndsAt: team.trialEndsAt, graceEndsAt: team.graceEndsAt } : null,
   });
 }
