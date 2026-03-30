@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Bot, ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useLanguage } from "@/lib/language";
+import LanguageToggle from "@/components/LanguageToggle";
 import { api } from "@/lib/api";
 import { WizardAnswers, WizardGroup } from "@/components/wizard/types";
 import { getVisibleGroups } from "@/components/wizard/wizardConfig";
@@ -14,45 +16,139 @@ import { buildConfig, buildSystemPrompt } from "@/components/wizard/systemPrompt
 import WizardStep from "@/components/wizard/WizardStep";
 import UrlScanStep, { ScrapedBusinessInfo } from "@/components/wizard/UrlScanStep";
 
-const purposeLabels: Record<string, string> = {
-  customer_support: "Корисничка поддршка",
-  sales: "Продажба",
-  info_faq: "Информации и FAQ",
-  appointments: "Закажување термини",
-  onboarding: "Onboarding",
+const purposeLabelsI18n = {
+  en: {
+    customer_support: "Customer Support",
+    sales: "Sales",
+    info_faq: "Info & FAQ",
+    appointments: "Appointments",
+    onboarding: "Onboarding",
+  } as Record<string, string>,
+  mk: {
+    customer_support: "Корисничка поддршка",
+    sales: "Продажба",
+    info_faq: "Информации и FAQ",
+    appointments: "Закажување термини",
+    onboarding: "Onboarding",
+  } as Record<string, string>,
 };
 
-const industryLabels: Record<string, string> = {
-  retail: "Малопродажба / Е-трговија",
-  hospitality: "Угостителство / Хотелиерство",
-  healthcare: "Здравство / Медицина",
-  education: "Образование",
-  realestate: "Недвижности",
-  finance: "Финансии / Осигурување",
-  beauty: "Убавина / Козметика / Фризерство",
-  automotive: "Автоиндустрија",
-  legal: "Правни услуги",
-  it_services: "ИТ / Технологија",
-  food: "Храна / Ресторани / Достава",
-  other: "Друго",
+const industryLabelsI18n = {
+  en: {
+    retail: "Retail / E-commerce",
+    hospitality: "Hospitality / Hotels",
+    healthcare: "Healthcare / Medicine",
+    education: "Education",
+    realestate: "Real Estate",
+    finance: "Finance / Insurance",
+    beauty: "Beauty / Cosmetics / Hair Salon",
+    automotive: "Automotive",
+    legal: "Legal Services",
+    it_services: "IT / Technology",
+    food: "Food / Restaurants / Delivery",
+    other: "Other",
+  } as Record<string, string>,
+  mk: {
+    retail: "Малопродажба / Е-трговија",
+    hospitality: "Угостителство / Хотелиерство",
+    healthcare: "Здравство / Медицина",
+    education: "Образование",
+    realestate: "Недвижности",
+    finance: "Финансии / Осигурување",
+    beauty: "Убавина / Козметика / Фризерство",
+    automotive: "Автоиндустрија",
+    legal: "Правни услуги",
+    it_services: "ИТ / Технологија",
+    food: "Храна / Ресторани / Достава",
+    other: "Друго",
+  } as Record<string, string>,
 };
 
-const toneLabels: Record<string, string> = {
-  professional: "Професионален",
-  friendly: "Пријателски",
-  casual: "Неформален",
-  formal: "Многу формален",
+const toneLabelsI18n = {
+  en: {
+    professional: "Professional",
+    friendly: "Friendly",
+    casual: "Casual",
+    formal: "Very Formal",
+  } as Record<string, string>,
+  mk: {
+    professional: "Професионален",
+    friendly: "Пријателски",
+    casual: "Неформален",
+    formal: "Многу формален",
+  } as Record<string, string>,
 };
 
-const langLabels: Record<string, string> = {
-  mk: "Македонски",
-  mk_en: "Македонски и Англиски",
-  en: "Англиски",
-  sq: "Албански",
+const langLabelsI18n = {
+  en: {
+    mk: "Macedonian",
+    mk_en: "Macedonian & English",
+    en: "English",
+    sq: "Albanian",
+  } as Record<string, string>,
+  mk: {
+    mk: "Македонски",
+    mk_en: "Македонски и Англиски",
+    en: "Англиски",
+    sq: "Албански",
+  } as Record<string, string>,
+};
+
+const t = {
+  en: {
+    cancel: "Cancel",
+    quickSetup: "Quick setup",
+    review: "Review",
+    back: "Back",
+    createChatbot: "Create Chatbot",
+    skip: "Skip",
+    continue: "Continue",
+    errorCreating: "Error creating chatbot",
+    reviewTitle: "Review your chatbot",
+    reviewDesc: "Review the information and edit the system prompt before creating.",
+    business: "Business",
+    industry: "Industry",
+    description: "Description",
+    phone: "Phone",
+    location: "Location",
+    workingHours: "Working hours",
+    purpose: "Purpose",
+    tone: "Tone",
+    language: "Language",
+    greeting: "Greeting",
+    systemPromptDesc: "This is the \"brain\" of your chatbot — the instructions it follows. Feel free to edit, add or remove sections.",
+    tip: "Tip: You can add specific rules, example responses, or information that the chatbot should know.",
+  },
+  mk: {
+    cancel: "Откажи",
+    quickSetup: "Брзо поставување",
+    review: "Преглед",
+    back: "Назад",
+    createChatbot: "Создади Chatbot",
+    skip: "Прескокни",
+    continue: "Продолжи",
+    errorCreating: "Грешка при креирање",
+    reviewTitle: "Преглед на вашиот chatbot",
+    reviewDesc: "Проверете ги информациите и уредете го system prompt-от пред да го создадете.",
+    business: "Бизнис",
+    industry: "Индустрија",
+    description: "Опис",
+    phone: "Телефон",
+    location: "Локација",
+    workingHours: "Работно време",
+    purpose: "Цел",
+    tone: "Тон",
+    language: "Јазик",
+    greeting: "Поздрав",
+    systemPromptDesc: 'Ова е „мозокот" на вашиот chatbot — инструкциите по кои работи. Слободно уредете го, додајте или отстранете делови.',
+    tip: "Совет: Можете да додадете специфични правила, примери за одговори, или информации што chatbot-от треба да ги знае.",
+  },
 };
 
 const NewChatbotWizard = () => {
   const { user, loading: authLoading } = useAuth();
+  const { lang } = useLanguage();
+  const c = t[lang];
   const navigate = useNavigate();
   const [showUrlScan, setShowUrlScan] = useState(true);
   const [scannedInfo, setScannedInfo] = useState<ScrapedBusinessInfo | null>(null);
@@ -160,7 +256,7 @@ const NewChatbotWizard = () => {
       });
       navigate(`/dashboard/chatbot/${chatbot._id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при креирање");
+      setError(err instanceof Error ? err.message : c.errorCreating);
       setCreating(false);
     }
   };
@@ -196,9 +292,12 @@ const NewChatbotWizard = () => {
             <Bot className="w-7 h-7 text-primary" />
             NexaAI
           </Link>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-            Откажи
-          </Button>
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+              {c.cancel}
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -208,9 +307,9 @@ const NewChatbotWizard = () => {
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-muted-foreground">
               {showUrlScan
-                ? "Брзо поставување"
+                ? c.quickSetup
                 : showReview
-                ? "Преглед"
+                ? c.review
                 : `${currentGroupIndex + 1} / ${totalGroups} — ${currentGroup?.name}`}
             </span>
             <span className="text-sm text-muted-foreground">
@@ -250,6 +349,7 @@ const NewChatbotWizard = () => {
                   answers={answers}
                   editedPrompt={editedPrompt}
                   onPromptChange={setEditedPrompt}
+                  lang={lang}
                 />
               </motion.div>
             ) : currentGroup ? (
@@ -286,7 +386,7 @@ const NewChatbotWizard = () => {
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Назад
+            {c.back}
           </Button>
 
           {showReview ? (
@@ -301,7 +401,7 @@ const NewChatbotWizard = () => {
               ) : (
                 <Sparkles className="w-4 h-4" />
               )}
-              Создади Chatbot
+              {c.createChatbot}
             </Button>
           ) : (
             <div className="flex items-center gap-3">
@@ -310,7 +410,7 @@ const NewChatbotWizard = () => {
                   onClick={handleNext}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
                 >
-                  Прескокни
+                  {c.skip}
                 </button>
               )}
               <Button
@@ -318,7 +418,7 @@ const NewChatbotWizard = () => {
                 disabled={!isGroupValid()}
                 className="gap-2 bg-gradient-accent text-white hover:opacity-90"
               >
-                Продолжи
+                {c.continue}
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
@@ -384,30 +484,37 @@ interface ReviewScreenProps {
   answers: WizardAnswers;
   editedPrompt: string;
   onPromptChange: (prompt: string) => void;
+  lang: "en" | "mk";
 }
 
-function ReviewScreen({ answers, editedPrompt, onPromptChange }: ReviewScreenProps) {
+function ReviewScreen({ answers, editedPrompt, onPromptChange, lang }: ReviewScreenProps) {
+  const c = t[lang];
+  const purposeLabels = purposeLabelsI18n[lang];
+  const industryLabels = industryLabelsI18n[lang];
+  const toneLabels = toneLabelsI18n[lang];
+  const langLabels = langLabelsI18n[lang];
+
   const rows: { label: string; value: string }[] = [
-    { label: "Бизнис", value: answers.business_name as string },
-    { label: "Индустрија", value: industryLabels[answers.industry as string] || (answers.industry as string) },
-    ...(answers.business_description ? [{ label: "Опис", value: answers.business_description as string }] : []),
-    ...(answers.phone_number ? [{ label: "Телефон", value: answers.phone_number as string }] : []),
-    ...(answers.location_info ? [{ label: "Локација", value: answers.location_info as string }] : []),
-    ...(answers.working_hours ? [{ label: "Работно време", value: answers.working_hours as string }] : []),
-    { label: "Цел", value: purposeLabels[answers.bot_purpose as string] || (answers.bot_purpose as string) },
-    { label: "Тон", value: toneLabels[answers.tone as string] || (answers.tone as string) },
-    { label: "Јазик", value: langLabels[answers.language as string] || (answers.language as string) },
-    ...(answers.greeting_message ? [{ label: "Поздрав", value: answers.greeting_message as string }] : []),
+    { label: c.business, value: answers.business_name as string },
+    { label: c.industry, value: industryLabels[answers.industry as string] || (answers.industry as string) },
+    ...(answers.business_description ? [{ label: c.description, value: answers.business_description as string }] : []),
+    ...(answers.phone_number ? [{ label: c.phone, value: answers.phone_number as string }] : []),
+    ...(answers.location_info ? [{ label: c.location, value: answers.location_info as string }] : []),
+    ...(answers.working_hours ? [{ label: c.workingHours, value: answers.working_hours as string }] : []),
+    { label: c.purpose, value: purposeLabels[answers.bot_purpose as string] || (answers.bot_purpose as string) },
+    { label: c.tone, value: toneLabels[answers.tone as string] || (answers.tone as string) },
+    { label: c.language, value: langLabels[answers.language as string] || (answers.language as string) },
+    ...(answers.greeting_message ? [{ label: c.greeting, value: answers.greeting_message as string }] : []),
   ];
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="font-display font-bold text-2xl text-foreground">
-          Преглед на вашиот chatbot
+          {c.reviewTitle}
         </h2>
         <p className="text-muted-foreground mt-2">
-          Проверете ги информациите и уредете го system prompt-от пред да го создадете.
+          {c.reviewDesc}
         </p>
       </div>
 
@@ -433,8 +540,7 @@ function ReviewScreen({ answers, editedPrompt, onPromptChange }: ReviewScreenPro
             System Prompt
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Ова е „мозокот" на вашиот chatbot — инструкциите по кои работи.
-            Слободно уредете го, додајте или отстранете делови.
+            {c.systemPromptDesc}
           </p>
         </div>
         <Textarea
@@ -444,8 +550,7 @@ function ReviewScreen({ answers, editedPrompt, onPromptChange }: ReviewScreenPro
           placeholder="System prompt..."
         />
         <p className="text-xs text-muted-foreground">
-          Совет: Можете да додадете специфични правила, примери за одговори, или информации
-          што chatbot-от треба да ги знае.
+          {c.tip}
         </p>
       </div>
     </div>

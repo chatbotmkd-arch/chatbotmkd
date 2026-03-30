@@ -6,9 +6,52 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bot, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useLanguage } from "@/lib/language";
+import LanguageToggle from "@/components/LanguageToggle";
+
+const t = {
+  en: {
+    title: "Create an account",
+    subtitle: "Start free for 8 days",
+    name: "Name",
+    namePlaceholder: "Your name",
+    email: "Email",
+    emailPlaceholder: "you@email.com",
+    password: "Password",
+    passwordPlaceholder: "At least 6 characters",
+    confirmPassword: "Confirm password",
+    confirmPlaceholder: "Repeat your password",
+    submit: "Start free",
+    hasAccount: "Already have an account?",
+    loginLink: "Log in",
+    error: "Registration failed",
+    mismatch: "Passwords do not match",
+    tooShort: "Password must be at least 6 characters",
+  },
+  mk: {
+    title: "Создади сметка",
+    subtitle: "Започнете бесплатно за 8 дена",
+    name: "Име",
+    namePlaceholder: "Вашето име",
+    email: "Email",
+    emailPlaceholder: "vase@email.com",
+    password: "Лозинка",
+    passwordPlaceholder: "Најмалку 6 карактери",
+    confirmPassword: "Потврди лозинка",
+    confirmPlaceholder: "Повторете ја лозинката",
+    submit: "Започни бесплатно",
+    hasAccount: "Веќе имате сметка?",
+    loginLink: "Најави се",
+    error: "Грешка при регистрација",
+    mismatch: "Лозинките не се совпаѓаат",
+    tooShort: "Лозинката мора да има најмалку 6 карактери",
+  },
+};
 
 const Signup = () => {
   const { register } = useAuth();
+  const { lang } = useLanguage();
+  const c = t[lang];
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -22,12 +65,12 @@ const Signup = () => {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Лозинките не се совпаѓаат");
+      setError(c.mismatch);
       return;
     }
 
     if (password.length < 6) {
-      setError("Лозинката мора да има најмалку 6 карактери");
+      setError(c.tooShort);
       return;
     }
 
@@ -37,7 +80,7 @@ const Signup = () => {
       await register(email, password, name);
       navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при регистрација");
+      setError(err instanceof Error ? err.message : c.error);
     } finally {
       setLoading(false);
     }
@@ -46,17 +89,18 @@ const Signup = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="flex items-center justify-between mb-8">
           <Link to="/" className="inline-flex items-center gap-2 font-display font-bold text-2xl text-foreground">
             <Bot className="w-8 h-8 text-primary" />
             NexaAI
           </Link>
+          <LanguageToggle />
         </div>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="font-display text-2xl">Создади сметка</CardTitle>
-            <CardDescription>Започнете бесплатно за 14 дена</CardDescription>
+            <CardTitle className="font-display text-2xl">{c.title}</CardTitle>
+            <CardDescription>{c.subtitle}</CardDescription>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
@@ -68,11 +112,11 @@ const Signup = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="name">Име</Label>
+                <Label htmlFor="name">{c.name}</Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Вашето име"
+                  placeholder={c.namePlaceholder}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -80,11 +124,11 @@ const Signup = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{c.email}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="vase@email.com"
+                  placeholder={c.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -92,11 +136,11 @@ const Signup = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Лозинка</Label>
+                <Label htmlFor="password">{c.password}</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Најмалку 6 карактери"
+                  placeholder={c.passwordPlaceholder}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -105,11 +149,11 @@ const Signup = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Потврди лозинка</Label>
+                <Label htmlFor="confirmPassword">{c.confirmPassword}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Повторете ја лозинката"
+                  placeholder={c.confirmPlaceholder}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -124,12 +168,12 @@ const Signup = () => {
                 disabled={loading}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Започни бесплатно
+                {c.submit}
               </Button>
               <p className="text-sm text-muted-foreground">
-                Веќе имате сметка?{" "}
+                {c.hasAccount}{" "}
                 <Link to="/login" className="text-primary font-medium hover:underline">
-                  Најави се
+                  {c.loginLink}
                 </Link>
               </p>
             </CardFooter>

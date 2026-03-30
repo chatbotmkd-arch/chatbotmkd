@@ -16,6 +16,8 @@ import {
   Database, RefreshCw, X, Send, MessageSquare, Link2, ExternalLink, BookOpen, Pencil,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useLanguage } from "@/lib/language";
+import LanguageToggle from "@/components/LanguageToggle";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -77,16 +79,375 @@ interface ConvMessage {
   createdAt: string;
 }
 
-const channelLabels: Record<string, string> = {
-  web: "Веб",
-  facebook: "Facebook",
-  instagram: "Instagram",
+const t = {
+  en: {
+    // Status
+    active: "Active",
+    paused: "Paused",
+    draft: "Draft",
+    notFound: "Chatbot not found.",
+    // Channel labels
+    channelWeb: "Web",
+    channelFacebook: "Facebook",
+    channelInstagram: "Instagram",
+    // Nav buttons
+    pause: "Pause",
+    activate: "Activate",
+    saved: "Saved",
+    save: "Save",
+    // Errors
+    errorLoading: "Error loading",
+    errorSaving: "Error saving",
+    errorActivating: "Error activating",
+    errorPausing: "Error pausing",
+    confirmDelete: "Are you sure you want to delete this chatbot?",
+    errorDeleting: "Error deleting",
+    errorAddingSource: "Error adding source",
+    errorResyncing: "Error resyncing",
+    errorGeneric: "Error",
+    metaNotConfigured: "Meta integration is not configured",
+    errorDisconnecting: "Error disconnecting",
+    // Tabs
+    tabPlayground: "Playground",
+    tabSettings: "Settings",
+    tabConversations: "Conversations",
+    tabSources: "Data Sources",
+    tabIntegrations: "Integrations",
+    tabEmbed: "Embed Code",
+    // Playground
+    testYourChatbot: "Test your chatbot",
+    clear: "Clear",
+    sendMessageToTest: "Send a message to test your chatbot.",
+    worksWithoutActivating: "Works without activating — test directly.",
+    typeMessage: "Type a message...",
+    playgroundLimitError: "Visit the pricing page to upgrade your plan.",
+    playgroundGenericError: "Error generating response. Check if the AI key is configured.",
+    // Info panel
+    information: "Information",
+    model: "Model",
+    language: "Language",
+    tone: "Tone",
+    temperature: "Temperature",
+    sources: "Sources",
+    sourcesCount: "source(s)",
+    tips: "Tips",
+    tip1: "Add data sources for better responses",
+    tip2: "Change the system prompt to modify behavior",
+    tip3: "Playground works on draft chatbots too",
+    tip4: "Conversation is saved — you can test follow-up questions",
+    // Conversations
+    conversations: "Conversations",
+    noConversations: "No conversations. Test the chatbot in Playground or activate it.",
+    msg: "msg.",
+    emptyConversation: "Empty conversation",
+    selectConversation: "Select a conversation to view messages",
+    playgroundConversation: "Playground conversation",
+    conversation: "conversation",
+    messages: "messages",
+    // Settings - System Prompt
+    clickToEdit: "click to edit",
+    systemPromptDesc: "Instructions for the AI agent — how it should behave and respond. This is the most important part of the settings.",
+    savedBang: "Saved!",
+    systemPromptPlaceholder: "You are an AI assistant for company X. Answer in English. Be concise and accurate...",
+    systemPromptTip: "Tip: Add rules, FAQ, business information — everything the chatbot needs to know.",
+    // Settings - Basic
+    basicSettings: "Basic settings",
+    configureAgent: "Configure your AI agent",
+    name: "Name",
+    aiModel: "AI Model",
+    gpt4oMini: "GPT-4o Mini (faster, cheaper)",
+    gpt4o: "GPT-4o (more advanced)",
+    languageLabel: "Language",
+    toneLabel: "Tone",
+    professional: "Professional",
+    friendly: "Friendly",
+    casual: "Casual",
+    tempLabel: "Temperature",
+    tempDesc: "Lower = more precise, Higher = more creative",
+    // Settings - Appearance
+    appearance: "Appearance",
+    greeting: "Greeting",
+    color: "Color",
+    deleteChatbot: "Delete chatbot",
+    // Sources
+    dataSources: "Data Sources",
+    dataSourcesDesc: "Add text, FAQ or website for AI to learn from.",
+    addSource: "Add source",
+    addDataSource: "Add data source",
+    aiWillLearn: "AI will learn from this data to answer accurately.",
+    textFaq: "Text / FAQ",
+    website: "Website",
+    content: "Content",
+    enterText: "Enter text, FAQ questions and answers, or other information...",
+    cancel: "Cancel",
+    add: "Add",
+    noSources: "No sources. Add text or website.",
+    sourceReady: "Ready",
+    sourceProcessing: "Processing...",
+    sourceError: "Error",
+    sourcePending: "Pending",
+    sourceTypeWebsite: "Website",
+    sourceTypeText: "Text",
+    namePlaceholderText: "e.g. Delivery FAQ",
+    namePlaceholderWebsite: "e.g. Our website",
+    urlPlaceholder: "https://your-website.com",
+    // Integrations
+    integrations: "Integrations",
+    integrationsDesc: "Connect your chatbot with Facebook and Instagram.",
+    websiteTitle: "Website",
+    embedWidgetDesc: "Embed widget on your site",
+    embedWidgetInfo: "Copy the embed code from the \"Embed Code\" tab and add it to your website.",
+    alwaysAvailable: "Always available",
+    facebookPage: "Facebook Page",
+    autoReplyDM: "Automatically reply to DM messages",
+    connected: "Connected",
+    instagramConnected: "Instagram connected",
+    disconnect: "Disconnect",
+    connectFacebookPage: "Connect Facebook Page",
+    instagramTitle: "Instagram",
+    autoReplyInstagramDM: "Automatically reply to Instagram DM",
+    connectedViaFacebook: "Connected via Facebook Page",
+    instagramAutoConnect: "Instagram connects automatically when you connect your Facebook Page (if you have a linked Instagram Business account).",
+    shareableLink: "Shareable link",
+    directLink: "Direct link to your chatbot",
+    chatbotMustBeActive: "Chatbot must be active for the link to work.",
+    shareLinkDesc: "Share this link for direct access to your chatbot without needing a website.",
+    shareLinkPending: "The shareable link will be available after the chatbot is saved.",
+    // Embed
+    embedCode: "Embed code for website",
+    embedCopyDesc: "Copy the code and add it to your website.",
+    guide: "Guide",
+    howToAdd: "How to add the chatbot to your website",
+    stepByStep: "Step by step installation guide",
+    step1Title: "Copy the code",
+    step1Desc: "Click the \"Copy code\" button below. The code will be automatically copied.",
+    step2Title: "Open your page HTML",
+    step2Desc: "Access the code of your website. Depending on the platform:",
+    step3Title: "Paste the code before </body>",
+    step3Desc: "Find the closing",
+    step3Desc2: "tag and paste the code",
+    step3Desc3: "right before it",
+    step3Comment: "<!-- Paste the code HERE -->",
+    step4Title: "Save and verify",
+    step4Desc: "Save the changes and open your website. In the bottom right corner, the chatbot icon should appear. Click it to test.",
+    usefulTips: "Useful tips",
+    tipOnce: "The code needs to be added only",
+    tipOnceB: "once",
+    tipOnceEnd: "— it will work on all pages.",
+    tipActivated: "The chatbot must be",
+    tipActivatedB: "activated",
+    tipActivatedEnd: "(status: Active) to display.",
+    tipImmediate: "Changes in settings (prompt, color, greeting) apply",
+    tipImmediateB: "immediately",
+    tipImmediateEnd: "— you don't need to re-add the code.",
+    tipDomains: "If you have problems, check if your domain is added in \"Allowed Domains\" in settings.",
+    copied: "Copied!",
+    copyCode: "Copy code",
+    gotIt: "Got it",
+    mustBeActiveForWidget: "The chatbot must be activated for the widget to work. Click \"Activate\" above.",
+    // Platform names (embed guide)
+    wordpress: "WordPress:",
+    wordpressDesc: "Appearance → Theme Editor → footer.php, or use a plugin like \"Insert Headers and Footers\"",
+    wix: "Wix:",
+    wixDesc: "Settings → Custom Code → Add Code → Body - End",
+    shopify: "Shopify:",
+    shopifyDesc: "Online Store → Themes → Edit Code → theme.liquid",
+    squarespace: "Squarespace:",
+    squarespaceDesc: "Settings → Advanced → Code Injection → Footer",
+    customHtml: "Custom HTML:",
+    customHtmlDesc: "Open the main HTML file (usually index.html)",
+  },
+  mk: {
+    // Status
+    active: "Активен",
+    paused: "Паузиран",
+    draft: "Нацрт",
+    notFound: "Chatbot-от не е пронајден.",
+    // Channel labels
+    channelWeb: "Веб",
+    channelFacebook: "Facebook",
+    channelInstagram: "Instagram",
+    // Nav buttons
+    pause: "Паузирај",
+    activate: "Активирај",
+    saved: "Зачувано",
+    save: "Зачувај",
+    // Errors
+    errorLoading: "Грешка при вчитување",
+    errorSaving: "Грешка при зачувување",
+    errorActivating: "Грешка при активирање",
+    errorPausing: "Грешка при паузирање",
+    confirmDelete: "Дали сте сигурни дека сакате да го избришете овој chatbot?",
+    errorDeleting: "Грешка при бришење",
+    errorAddingSource: "Грешка при додавање на извор",
+    errorResyncing: "Грешка при ресинхронизација",
+    errorGeneric: "Грешка",
+    metaNotConfigured: "Meta интеграцијата не е конфигурирана",
+    errorDisconnecting: "Грешка при дисконектирање",
+    // Tabs
+    tabPlayground: "Playground",
+    tabSettings: "Подесувања",
+    tabConversations: "Разговори",
+    tabSources: "Извори на податоци",
+    tabIntegrations: "Интеграции",
+    tabEmbed: "Embed код",
+    // Playground
+    testYourChatbot: "Тестирајте го вашиот chatbot",
+    clear: "Исчисти",
+    sendMessageToTest: "Испратете порака за да го тестирате вашиот chatbot.",
+    worksWithoutActivating: "Работи и без активирање — директно тестирајте.",
+    typeMessage: "Напишете порака...",
+    playgroundLimitError: "Посетете ја страницата за цени за да го надградите вашиот план.",
+    playgroundGenericError: "Грешка при генерирање одговор. Проверете дали AI клучот е конфигуриран.",
+    // Info panel
+    information: "Информации",
+    model: "Модел",
+    language: "Јазик",
+    tone: "Тон",
+    temperature: "Температура",
+    sources: "Извори",
+    sourcesCount: "извор(и)",
+    tips: "Совети",
+    tip1: "Додадете извори на податоци за подобри одговори",
+    tip2: "Менувајте го system prompt-от за да го промените однесувањето",
+    tip3: "Playground работи и на draft chatbot-и",
+    tip4: "Разговорот се чува — може да тестирате follow-up прашања",
+    // Conversations
+    conversations: "Разговори",
+    noConversations: "Нема разговори. Тестирајте го chatbot-от во Playground или активирајте го.",
+    msg: "пор.",
+    emptyConversation: "Празен разговор",
+    selectConversation: "Изберете разговор за да ги видите пораките",
+    playgroundConversation: "Playground разговор",
+    conversation: "разговор",
+    messages: "пораки",
+    // Settings - System Prompt
+    clickToEdit: "кликнете за уредување",
+    systemPromptDesc: "Инструкции за AI агентот — како да се однесува и одговара. Ова е најважниот дел од подесувањата.",
+    savedBang: "Зачувано!",
+    systemPromptPlaceholder: "Ти си AI асистент за компанијата X. Одговарај на македонски јазик. Биди кус и точен...",
+    systemPromptTip: "Совет: Додадете правила, FAQ, информации за бизнисот — сè што chatbot-от треба да го знае.",
+    // Settings - Basic
+    basicSettings: "Основни подесувања",
+    configureAgent: "Конфигурирајте го вашиот AI агент",
+    name: "Име",
+    aiModel: "AI Модел",
+    gpt4oMini: "GPT-4o Mini (побрз, поевтин)",
+    gpt4o: "GPT-4o (понапреден)",
+    languageLabel: "Јазик",
+    toneLabel: "Тон",
+    professional: "Професионален",
+    friendly: "Пријателски",
+    casual: "Неформален",
+    tempLabel: "Температура",
+    tempDesc: "Пониско = попрецизно, Повисоко = покреативно",
+    // Settings - Appearance
+    appearance: "Изглед",
+    greeting: "Поздрав",
+    color: "Боја",
+    deleteChatbot: "Избриши chatbot",
+    // Sources
+    dataSources: "Извори на податоци",
+    dataSourcesDesc: "Додадете текст, FAQ или веб-страна за AI да учи од нив.",
+    addSource: "Додади извор",
+    addDataSource: "Додади извор на податоци",
+    aiWillLearn: "AI ќе учи од овие податоци за да одговара точно.",
+    textFaq: "Текст / FAQ",
+    website: "Веб-страна",
+    content: "Содржина",
+    enterText: "Внесете го текстот, FAQ прашања и одговори, или друга информација...",
+    cancel: "Откажи",
+    add: "Додади",
+    noSources: "Нема извори. Додадете текст или веб-страна.",
+    sourceReady: "Готов",
+    sourceProcessing: "Се обработува...",
+    sourceError: "Грешка",
+    sourcePending: "Чека",
+    sourceTypeWebsite: "Веб-страна",
+    sourceTypeText: "Текст",
+    namePlaceholderText: "нпр. FAQ за испорака",
+    namePlaceholderWebsite: "нпр. Нашата веб-страна",
+    urlPlaceholder: "https://vashata-stranica.mk",
+    // Integrations
+    integrations: "Интеграции",
+    integrationsDesc: "Поврзете го вашиот chatbot со Facebook и Instagram.",
+    websiteTitle: "Веб-страна",
+    embedWidgetDesc: "Embed виџет на вашата страна",
+    embedWidgetInfo: "Копирајте го embed кодот од табот \"Embed код\" и ставете го на вашата веб-страна.",
+    alwaysAvailable: "Секогаш достапно",
+    facebookPage: "Facebook Page",
+    autoReplyDM: "Автоматски одговарајте на DM пораки",
+    connected: "Поврзана",
+    instagramConnected: "Instagram поврзан",
+    disconnect: "Дисконектирај",
+    connectFacebookPage: "Поврзи Facebook Page",
+    instagramTitle: "Instagram",
+    autoReplyInstagramDM: "Автоматски одговарајте на Instagram DM",
+    connectedViaFacebook: "Поврзан преку Facebook Page",
+    instagramAutoConnect: "Instagram се поврзува автоматски кога ја поврзувате вашата Facebook Page (ако имате поврзана Instagram Business сметка).",
+    shareableLink: "Споделлив линк",
+    directLink: "Директен линк до вашиот chatbot",
+    chatbotMustBeActive: "Chatbot-от мора да биде активен за линкот да работи.",
+    shareLinkDesc: "Споделете го овој линк за директен пристап до вашиот chatbot без потреба од веб-страна.",
+    shareLinkPending: "Споделливиот линк ќе биде достапен откако chatbot-от ќе биде зачуван.",
+    // Embed
+    embedCode: "Embed код за веб-страна",
+    embedCopyDesc: "Копирајте го кодот и ставете го на вашата веб-страна.",
+    guide: "Упатство",
+    howToAdd: "Како да го додадете chatbot-от на вашата веб-страна",
+    stepByStep: "Чекор по чекор упатство за инсталација",
+    step1Title: "Копирајте го кодот",
+    step1Desc: 'Кликнете на копчето „Копирај код" подолу. Кодот автоматски ќе се копира.',
+    step2Title: "Отворете го HTML-от на вашата страна",
+    step2Desc: "Пристапете до кодот на вашата веб-страна. Зависно од платформата:",
+    step3Title: "Залепете го кодот пред </body>",
+    step3Desc: "Најдете го затворачкиот",
+    step3Desc2: "таг и залепете го кодот",
+    step3Desc3: "непосредно пред него",
+    step3Comment: "<!-- Залепете го кодот ТУКА -->",
+    step4Title: "Зачувајте и проверете",
+    step4Desc: "Зачувајте ги промените и отворете ја вашата веб-страна. Во долниот десен агол треба да се појави иконата на chatbot-от. Кликнете на неа за да го тестирате.",
+    usefulTips: "Корисни совети",
+    tipOnce: "Кодот треба да се додаде само",
+    tipOnceB: "еднаш",
+    tipOnceEnd: "— ќе работи на сите страници.",
+    tipActivated: "Chatbot-от мора да биде",
+    tipActivatedB: "активиран",
+    tipActivatedEnd: "(статус: Active) за да се прикажува.",
+    tipImmediate: "Промените во подесувањата (prompt, боја, поздрав) се применуваат",
+    tipImmediateB: "веднаш",
+    tipImmediateEnd: "— не треба повторно да го додавате кодот.",
+    tipDomains: 'Ако имате проблеми, проверете дали вашиот домен е додаден во „Дозволени домени" во подесувањата.',
+    copied: "Копирано!",
+    copyCode: "Копирај код",
+    gotIt: "Разбрав",
+    mustBeActiveForWidget: 'Chatbot-от мора да биде активиран за виџетот да работи. Кликнете „Активирај" горе.',
+    // Platform names (embed guide)
+    wordpress: "WordPress:",
+    wordpressDesc: 'Appearance → Theme Editor → footer.php, или користете plugin како „Insert Headers and Footers"',
+    wix: "Wix:",
+    wixDesc: "Settings → Custom Code → Add Code → Body - End",
+    shopify: "Shopify:",
+    shopifyDesc: "Online Store → Themes → Edit Code → theme.liquid",
+    squarespace: "Squarespace:",
+    squarespaceDesc: "Settings → Advanced → Code Injection → Footer",
+    customHtml: "Custom HTML:",
+    customHtmlDesc: "Отворете го главниот HTML фајл (обично index.html)",
+  },
 };
 
 const ChatbotPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { lang } = useLanguage();
+  const c = t[lang];
+
+  const channelLabels: Record<string, string> = {
+    web: c.channelWeb,
+    facebook: c.channelFacebook,
+    instagram: c.channelInstagram,
+  };
 
   const [chatbot, setChatbot] = useState<Chatbot | null>(null);
   const [sources, setSources] = useState<Source[]>([]);
@@ -162,7 +523,7 @@ const ChatbotPage = () => {
       setGreeting(bot.appearance.greeting);
       setPrimaryColor(bot.appearance.primaryColor);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при вчитување");
+      setError(err instanceof Error ? err.message : c.errorLoading);
     } finally {
       setLoading(false);
     }
@@ -181,7 +542,7 @@ const ChatbotPage = () => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при зачувување");
+      setError(err instanceof Error ? err.message : c.errorSaving);
     } finally {
       setSaving(false);
     }
@@ -192,7 +553,7 @@ const ChatbotPage = () => {
       const updated = await api.post<Chatbot>(`/chatbots/${id}/deploy`);
       setChatbot(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при активирање");
+      setError(err instanceof Error ? err.message : c.errorActivating);
     }
   };
 
@@ -201,17 +562,17 @@ const ChatbotPage = () => {
       const updated = await api.post<Chatbot>(`/chatbots/${id}/pause`);
       setChatbot(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при паузирање");
+      setError(err instanceof Error ? err.message : c.errorPausing);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm("Дали сте сигурни дека сакате да го избришете овој chatbot?")) return;
+    if (!confirm(c.confirmDelete)) return;
     try {
       await api.delete(`/chatbots/${id}`);
       navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при бришење");
+      setError(err instanceof Error ? err.message : c.errorDeleting);
     }
   };
 
@@ -238,7 +599,7 @@ const ChatbotPage = () => {
       const srcs = await api.get<Source[]>(`/chatbots/${id}/sources`);
       setSources(srcs);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при додавање на извор");
+      setError(err instanceof Error ? err.message : c.errorAddingSource);
     } finally {
       setAddingSource(false);
     }
@@ -249,7 +610,7 @@ const ChatbotPage = () => {
       await api.delete(`/chatbots/${id}/sources/${sourceId}`);
       setSources((prev) => prev.filter((s) => s._id !== sourceId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при бришење");
+      setError(err instanceof Error ? err.message : c.errorDeleting);
     }
   };
 
@@ -259,7 +620,7 @@ const ChatbotPage = () => {
       const srcs = await api.get<Source[]>(`/chatbots/${id}/sources`);
       setSources(srcs);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при ресинхронизација");
+      setError(err instanceof Error ? err.message : c.errorResyncing);
     }
   };
 
@@ -270,7 +631,7 @@ const ChatbotPage = () => {
       setEmbedCopied(true);
       setTimeout(() => setEmbedCopied(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка");
+      setError(err instanceof Error ? err.message : c.errorGeneric);
     }
   };
 
@@ -291,14 +652,14 @@ const ChatbotPage = () => {
       setPlaygroundMessages((prev) => [...prev, { role: "assistant", content: data.message.content }]);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "";
-      const isLimitError = errorMsg.includes("лимитот") || errorMsg.includes("Надградете");
+      const isLimitError = errorMsg.includes("лимитот") || errorMsg.includes("Надградете") || errorMsg.includes("limit") || errorMsg.includes("Upgrade");
       setPlaygroundMessages((prev) => [
         ...prev,
         {
           role: "assistant",
           content: isLimitError
-            ? "⚠️ " + errorMsg + " Посетете ја страницата за цени за да го надградите вашиот план."
-            : "Грешка при генерирање одговор. Проверете дали AI клучот е конфигуриран.",
+            ? "⚠️ " + errorMsg + " " + c.playgroundLimitError
+            : c.playgroundGenericError,
         },
       ]);
     } finally {
@@ -343,7 +704,7 @@ const ChatbotPage = () => {
       const data = await api.get<{ url: string }>(`/auth/facebook/connect?chatbotId=${id}`);
       window.location.href = data.url;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Meta интеграцијата не е конфигурирана");
+      setError(err instanceof Error ? err.message : c.metaNotConfigured);
     }
   };
 
@@ -352,7 +713,7 @@ const ChatbotPage = () => {
       await api.post("/pages/disconnect", { pageId });
       setConnections((prev) => prev.filter((c) => c.pageId !== pageId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при дисконектирање");
+      setError(err instanceof Error ? err.message : c.errorDisconnecting);
     }
   };
 
@@ -367,13 +728,14 @@ const ChatbotPage = () => {
   if (!chatbot) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Chatbot-от не е пронајден.</p>
+        <p className="text-muted-foreground">{c.notFound}</p>
       </div>
     );
   }
 
   const statusColor = chatbot.status === "active" ? "text-green-600" : chatbot.status === "paused" ? "text-yellow-600" : "text-muted-foreground";
-  const statusText = chatbot.status === "active" ? "Активен" : chatbot.status === "paused" ? "Паузиран" : "Нацрт";
+  const statusText = chatbot.status === "active" ? c.active : chatbot.status === "paused" ? c.paused : c.draft;
+  const locale = lang === "mk" ? "mk-MK" : "en-US";
 
   return (
     <div className="min-h-screen bg-background">
@@ -391,13 +753,14 @@ const ChatbotPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             {chatbot.status === "active" ? (
               <Button variant="outline" size="sm" onClick={handlePause} className="gap-2">
-                <Pause className="w-4 h-4" /> Паузирај
+                <Pause className="w-4 h-4" /> {c.pause}
               </Button>
             ) : (
               <Button size="sm" onClick={handleDeploy} className="gap-2 bg-green-600 text-white hover:bg-green-700">
-                <Play className="w-4 h-4" /> Активирај
+                <Play className="w-4 h-4" /> {c.activate}
               </Button>
             )}
             <Button
@@ -407,7 +770,7 @@ const ChatbotPage = () => {
               className="gap-2 bg-gradient-accent text-white hover:opacity-90"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-              {saved ? "Зачувано" : "Зачувај"}
+              {saved ? c.saved : c.save}
             </Button>
           </div>
         </div>
@@ -420,12 +783,12 @@ const ChatbotPage = () => {
 
         <Tabs defaultValue="playground">
           <TabsList className="mb-6">
-            <TabsTrigger value="playground">Playground</TabsTrigger>
-            <TabsTrigger value="settings">Подесувања</TabsTrigger>
-            <TabsTrigger value="conversations" onClick={() => { if (conversations.length === 0) loadConversations(); }}>Разговори</TabsTrigger>
-            <TabsTrigger value="sources">Извори на податоци</TabsTrigger>
-            <TabsTrigger value="integrations">Интеграции</TabsTrigger>
-            <TabsTrigger value="embed">Embed код</TabsTrigger>
+            <TabsTrigger value="playground">{c.tabPlayground}</TabsTrigger>
+            <TabsTrigger value="settings">{c.tabSettings}</TabsTrigger>
+            <TabsTrigger value="conversations" onClick={() => { if (conversations.length === 0) loadConversations(); }}>{c.tabConversations}</TabsTrigger>
+            <TabsTrigger value="sources">{c.tabSources}</TabsTrigger>
+            <TabsTrigger value="integrations">{c.tabIntegrations}</TabsTrigger>
+            <TabsTrigger value="embed">{c.tabEmbed}</TabsTrigger>
           </TabsList>
 
           {/* ═══ Playground Tab ═══ */}
@@ -436,11 +799,11 @@ const ChatbotPage = () => {
                 <CardHeader className="flex-row items-center justify-between pb-3">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="w-5 h-5 text-primary" />
-                    <CardTitle className="text-base">Тестирајте го вашиот chatbot</CardTitle>
+                    <CardTitle className="text-base">{c.testYourChatbot}</CardTitle>
                   </div>
                   {playgroundMessages.length > 0 && (
                     <Button variant="ghost" size="sm" onClick={handlePlaygroundClear} className="text-muted-foreground">
-                      Исчисти
+                      {c.clear}
                     </Button>
                   )}
                 </CardHeader>
@@ -451,10 +814,10 @@ const ChatbotPage = () => {
                       <div className="flex flex-col items-center justify-center h-full text-center py-12">
                         <Bot className="w-12 h-12 text-muted-foreground/30 mb-4" />
                         <p className="text-muted-foreground text-sm">
-                          Испратете порака за да го тестирате вашиот chatbot.
+                          {c.sendMessageToTest}
                         </p>
                         <p className="text-muted-foreground/60 text-xs mt-1">
-                          Работи и без активирање — директно тестирајте.
+                          {c.worksWithoutActivating}
                         </p>
                       </div>
                     )}
@@ -498,7 +861,7 @@ const ChatbotPage = () => {
                           handlePlaygroundSend();
                         }
                       }}
-                      placeholder={chatbot.appearance.placeholder || "Напишете порака..."}
+                      placeholder={chatbot.appearance.placeholder || c.typeMessage}
                       disabled={playgroundSending}
                       className="flex-1"
                     />
@@ -517,40 +880,40 @@ const ChatbotPage = () => {
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Информации</CardTitle>
+                    <CardTitle className="text-base">{c.information}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Модел</span>
+                      <span className="text-muted-foreground">{c.model}</span>
                       <span className="font-medium text-foreground">{chatbot.config.model}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Јазик</span>
+                      <span className="text-muted-foreground">{c.language}</span>
                       <span className="font-medium text-foreground">{chatbot.config.language === "mk" ? "Македонски" : chatbot.config.language}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Тон</span>
+                      <span className="text-muted-foreground">{c.tone}</span>
                       <span className="font-medium text-foreground capitalize">{chatbot.config.tone}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Температура</span>
+                      <span className="text-muted-foreground">{c.temperature}</span>
                       <span className="font-medium text-foreground">{chatbot.config.temperature}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Извори</span>
-                      <span className="font-medium text-foreground">{sources.length} извор(и)</span>
+                      <span className="text-muted-foreground">{c.sources}</span>
+                      <span className="font-medium text-foreground">{sources.length} {c.sourcesCount}</span>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="border-dashed">
                   <CardContent className="py-6">
-                    <h4 className="font-display font-semibold text-foreground mb-2">Совети</h4>
+                    <h4 className="font-display font-semibold text-foreground mb-2">{c.tips}</h4>
                     <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li>• Додадете извори на податоци за подобри одговори</li>
-                      <li>• Менувајте го system prompt-от за да го промените однесувањето</li>
-                      <li>• Playground работи и на draft chatbot-и</li>
-                      <li>• Разговорот се чува — може да тестирате follow-up прашања</li>
+                      <li>• {c.tip1}</li>
+                      <li>• {c.tip2}</li>
+                      <li>• {c.tip3}</li>
+                      <li>• {c.tip4}</li>
                     </ul>
                   </CardContent>
                 </Card>
@@ -564,7 +927,7 @@ const ChatbotPage = () => {
               {/* Conversation list */}
               <div className="lg:col-span-1 space-y-2">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-display font-semibold text-lg text-foreground">Разговори</h2>
+                  <h2 className="font-display font-semibold text-lg text-foreground">{c.conversations}</h2>
                   <Button variant="ghost" size="sm" onClick={loadConversations} disabled={conversationsLoading}>
                     <RefreshCw className={cn("w-4 h-4", conversationsLoading && "animate-spin")} />
                   </Button>
@@ -579,7 +942,7 @@ const ChatbotPage = () => {
                     <CardContent className="flex flex-col items-center justify-center py-12">
                       <MessageSquare className="w-10 h-10 text-muted-foreground/30 mb-3" />
                       <p className="text-sm text-muted-foreground text-center">
-                        Нема разговори. Тестирајте го chatbot-от во Playground или активирајте го.
+                        {c.noConversations}
                       </p>
                     </CardContent>
                   </Card>
@@ -619,14 +982,14 @@ const ChatbotPage = () => {
                               )} />
                             </div>
                             <span className="text-xs text-muted-foreground">
-                              {conv.messageCount} пор.
+                              {conv.messageCount} {c.msg}
                             </span>
                           </div>
                           <p className="text-sm text-foreground truncate">
-                            {conv.preview || "Празен разговор"}
+                            {conv.preview || c.emptyConversation}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(conv.lastMessageAt).toLocaleString("mk-MK", {
+                            {new Date(conv.lastMessageAt).toLocaleString(locale, {
                               day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
                             })}
                           </p>
@@ -643,7 +1006,7 @@ const ChatbotPage = () => {
                   <Card className="h-full flex items-center justify-center border-dashed">
                     <CardContent className="text-center py-16">
                       <MessageSquare className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
-                      <p className="text-muted-foreground">Изберете разговор за да ги видите пораките</p>
+                      <p className="text-muted-foreground">{c.selectConversation}</p>
                     </CardContent>
                   </Card>
                 ) : convMessagesLoading ? (
@@ -657,13 +1020,13 @@ const ChatbotPage = () => {
                         <CardTitle className="text-base">
                           {(() => {
                             const conv = conversations.find((c) => c._id === selectedConversation);
-                            if (!conv) return "Разговор";
+                            if (!conv) return c.conversation;
                             const isPlayground = conv.sessionId.startsWith("playground:");
-                            return isPlayground ? "Playground разговор" : `${channelLabels[conv.channel] || conv.channel} разговор`;
+                            return isPlayground ? c.playgroundConversation : `${channelLabels[conv.channel] || conv.channel} ${c.conversation}`;
                           })()}
                         </CardTitle>
                         <span className="text-xs text-muted-foreground">
-                          {conversationMessages.length} пораки
+                          {conversationMessages.length} {c.messages}
                         </span>
                       </div>
                     </CardHeader>
@@ -687,7 +1050,7 @@ const ChatbotPage = () => {
                               "text-[10px] mt-1",
                               msg.role === "user" ? "text-primary-foreground/60" : "text-muted-foreground"
                             )}>
-                              {new Date(msg.createdAt).toLocaleTimeString("mk-MK", {
+                              {new Date(msg.createdAt).toLocaleTimeString(locale, {
                                 hour: "2-digit", minute: "2-digit",
                               })}
                             </p>
@@ -718,12 +1081,12 @@ const ChatbotPage = () => {
                       {!promptFocused && (
                         <span className="inline-flex items-center gap-1 text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                           <Pencil className="w-3 h-3" />
-                          кликнете за уредување
+                          {c.clickToEdit}
                         </span>
                       )}
                     </CardTitle>
                     <CardDescription>
-                      Инструкции за AI агентот — како да се однесува и одговара. Ова е најважниот дел од подесувањата.
+                      {c.systemPromptDesc}
                     </CardDescription>
                   </div>
                   {promptFocused && (
@@ -739,7 +1102,7 @@ const ChatbotPage = () => {
                       ) : (
                         <Save className="w-4 h-4" />
                       )}
-                      {saved ? "Зачувано!" : "Зачувај"}
+                      {saved ? c.savedBang : c.save}
                     </Button>
                   )}
                 </div>
@@ -754,7 +1117,7 @@ const ChatbotPage = () => {
                     if (e.relatedTarget?.closest?.("button")) return;
                     setPromptFocused(false);
                   }}
-                  placeholder="Ти си AI асистент за компанијата X. Одговарај на македонски јазик. Биди кус и точен..."
+                  placeholder={c.systemPromptPlaceholder}
                   className={cn(
                     "font-mono text-sm leading-relaxed min-h-[45vh] resize-y transition-colors duration-200",
                     promptFocused
@@ -763,7 +1126,7 @@ const ChatbotPage = () => {
                   )}
                 />
                 <p className="text-xs text-muted-foreground mt-2">
-                  Совет: Додадете правила, FAQ, информации за бизнисот — сè што chatbot-от треба да го знае.
+                  {c.systemPromptTip}
                 </p>
               </CardContent>
             </Card>
@@ -771,27 +1134,27 @@ const ChatbotPage = () => {
             <div className="grid lg:grid-cols-2 gap-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>Основни подесувања</CardTitle>
-                  <CardDescription>Конфигурирајте го вашиот AI агент</CardDescription>
+                  <CardTitle>{c.basicSettings}</CardTitle>
+                  <CardDescription>{c.configureAgent}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Име</Label>
+                    <Label>{c.name}</Label>
                     <Input value={name} onChange={(e) => setName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>AI Модел</Label>
+                    <Label>{c.aiModel}</Label>
                     <select
                       value={model}
                       onChange={(e) => setModel(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
-                      <option value="gpt-4o-mini">GPT-4o Mini (побрз, поевтин)</option>
-                      <option value="gpt-4o">GPT-4o (понапреден)</option>
+                      <option value="gpt-4o-mini">{c.gpt4oMini}</option>
+                      <option value="gpt-4o">{c.gpt4o}</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Јазик</Label>
+                    <Label>{c.languageLabel}</Label>
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
@@ -803,19 +1166,19 @@ const ChatbotPage = () => {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Тон</Label>
+                    <Label>{c.toneLabel}</Label>
                     <select
                       value={tone}
                       onChange={(e) => setTone(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
-                      <option value="professional">Професионален</option>
-                      <option value="friendly">Пријателски</option>
-                      <option value="casual">Неформален</option>
+                      <option value="professional">{c.professional}</option>
+                      <option value="friendly">{c.friendly}</option>
+                      <option value="casual">{c.casual}</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Температура: {temperature}</Label>
+                    <Label>{c.tempLabel}: {temperature}</Label>
                     <input
                       type="range"
                       min="0"
@@ -825,7 +1188,7 @@ const ChatbotPage = () => {
                       onChange={(e) => setTemperature(parseFloat(e.target.value))}
                       className="w-full"
                     />
-                    <p className="text-xs text-muted-foreground">Пониско = попрецизно, Повисоко = покреативно</p>
+                    <p className="text-xs text-muted-foreground">{c.tempDesc}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -833,15 +1196,15 @@ const ChatbotPage = () => {
               <div className="space-y-8">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Изглед</CardTitle>
+                    <CardTitle>{c.appearance}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Поздрав</Label>
+                      <Label>{c.greeting}</Label>
                       <Input value={greeting} onChange={(e) => setGreeting(e.target.value)} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Боја</Label>
+                      <Label>{c.color}</Label>
                       <div className="flex items-center gap-3">
                         <input
                           type="color"
@@ -856,7 +1219,7 @@ const ChatbotPage = () => {
                 </Card>
 
                 <Button variant="destructive" size="sm" onClick={handleDelete} className="gap-2">
-                  <Trash2 className="w-4 h-4" /> Избриши chatbot
+                  <Trash2 className="w-4 h-4" /> {c.deleteChatbot}
                 </Button>
               </div>
             </div>
@@ -866,19 +1229,19 @@ const ChatbotPage = () => {
           <TabsContent value="sources">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="font-display font-semibold text-xl text-foreground">Извори на податоци</h2>
-                <p className="text-sm text-muted-foreground">Додадете текст, FAQ или веб-страна за AI да учи од нив.</p>
+                <h2 className="font-display font-semibold text-xl text-foreground">{c.dataSources}</h2>
+                <p className="text-sm text-muted-foreground">{c.dataSourcesDesc}</p>
               </div>
               <Dialog open={addSourceOpen} onOpenChange={setAddSourceOpen}>
                 <DialogTrigger asChild>
                   <Button className="gap-2 bg-gradient-accent text-white hover:opacity-90">
-                    <Plus className="w-4 h-4" /> Додади извор
+                    <Plus className="w-4 h-4" /> {c.addSource}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Додади извор на податоци</DialogTitle>
-                    <DialogDescription>AI ќе учи од овие податоци за да одговара точно.</DialogDescription>
+                    <DialogTitle>{c.addDataSource}</DialogTitle>
+                    <DialogDescription>{c.aiWillLearn}</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="flex gap-2">
@@ -887,29 +1250,29 @@ const ChatbotPage = () => {
                         size="sm"
                         onClick={() => setSourceType("text")}
                       >
-                        Текст / FAQ
+                        {c.textFaq}
                       </Button>
                       <Button
                         variant={sourceType === "website" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setSourceType("website")}
                       >
-                        Веб-страна
+                        {c.website}
                       </Button>
                     </div>
                     <div className="space-y-2">
-                      <Label>Име</Label>
+                      <Label>{c.name}</Label>
                       <Input
-                        placeholder={sourceType === "text" ? "нпр. FAQ за испорака" : "нпр. Нашата веб-страна"}
+                        placeholder={sourceType === "text" ? c.namePlaceholderText : c.namePlaceholderWebsite}
                         value={sourceName}
                         onChange={(e) => setSourceName(e.target.value)}
                       />
                     </div>
                     {sourceType === "text" ? (
                       <div className="space-y-2">
-                        <Label>Содржина</Label>
+                        <Label>{c.content}</Label>
                         <Textarea
-                          placeholder="Внесете го текстот, FAQ прашања и одговори, или друга информација..."
+                          placeholder={c.enterText}
                           rows={8}
                           value={sourceContent}
                           onChange={(e) => setSourceContent(e.target.value)}
@@ -919,7 +1282,7 @@ const ChatbotPage = () => {
                       <div className="space-y-2">
                         <Label>URL</Label>
                         <Input
-                          placeholder="https://vashata-stranica.mk"
+                          placeholder={c.urlPlaceholder}
                           value={sourceUrl}
                           onChange={(e) => setSourceUrl(e.target.value)}
                         />
@@ -927,14 +1290,14 @@ const ChatbotPage = () => {
                     )}
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setAddSourceOpen(false)}>Откажи</Button>
+                    <Button variant="outline" onClick={() => setAddSourceOpen(false)}>{c.cancel}</Button>
                     <Button
                       onClick={handleAddSource}
                       disabled={addingSource || !sourceName.trim() || (sourceType === "text" ? !sourceContent.trim() : !sourceUrl.trim())}
                       className="bg-gradient-accent text-white hover:opacity-90"
                     >
                       {addingSource && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                      Додади
+                      {c.add}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -945,9 +1308,9 @@ const ChatbotPage = () => {
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Database className="w-10 h-10 text-muted-foreground/40 mb-4" />
-                  <p className="text-muted-foreground mb-4">Нема извори. Додадете текст или веб-страна.</p>
+                  <p className="text-muted-foreground mb-4">{c.noSources}</p>
                   <Button variant="outline" onClick={() => setAddSourceOpen(true)} className="gap-2">
-                    <Plus className="w-4 h-4" /> Додади извор
+                    <Plus className="w-4 h-4" /> {c.addSource}
                   </Button>
                 </CardContent>
               </Card>
@@ -962,23 +1325,23 @@ const ChatbotPage = () => {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate">{src.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {src.type === "website" ? "Веб-страна" : "Текст"} ·{" "}
+                          {src.type === "website" ? c.sourceTypeWebsite : c.sourceTypeText} ·{" "}
                           <span className={cn(
                             src.status === "ready" && "text-green-600",
                             src.status === "processing" && "text-yellow-600",
                             src.status === "error" && "text-destructive",
                             src.status === "pending" && "text-muted-foreground",
                           )}>
-                            {src.status === "ready" ? "Готов" : src.status === "processing" ? "Се обработува..." : src.status === "error" ? "Грешка" : "Чека"}
+                            {src.status === "ready" ? c.sourceReady : src.status === "processing" ? c.sourceProcessing : src.status === "error" ? c.sourceError : c.sourcePending}
                           </span>
                           {src.errorMessage && ` — ${src.errorMessage}`}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleResyncSource(src._id)} title="Ресинхронизирај">
+                        <Button variant="ghost" size="sm" onClick={() => handleResyncSource(src._id)}>
                           <RefreshCw className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteSource(src._id)} title="Избриши">
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteSource(src._id)}>
                           <X className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>
@@ -991,8 +1354,8 @@ const ChatbotPage = () => {
 
           {/* ═══ Integrations Tab ═══ */}
           <TabsContent value="integrations">
-            <h2 className="font-display font-semibold text-xl text-foreground mb-2">Интеграции</h2>
-            <p className="text-sm text-muted-foreground mb-6">Поврзете го вашиот chatbot со Facebook и Instagram.</p>
+            <h2 className="font-display font-semibold text-xl text-foreground mb-2">{c.integrations}</h2>
+            <p className="text-sm text-muted-foreground mb-6">{c.integrationsDesc}</p>
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* Website */}
@@ -1003,17 +1366,17 @@ const ChatbotPage = () => {
                       <Globe className="w-5 h-5 text-indigo-500" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Веб-страна</CardTitle>
-                      <CardDescription>Embed виџет на вашата страна</CardDescription>
+                      <CardTitle className="text-base">{c.websiteTitle}</CardTitle>
+                      <CardDescription>{c.embedWidgetDesc}</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Копирајте го embed кодот од табот "Embed код" и ставете го на вашата веб-страна.
+                    {c.embedWidgetInfo}
                   </p>
                   <div className="flex items-center gap-2 text-sm text-green-600">
-                    <Check className="w-4 h-4" /> Секогаш достапно
+                    <Check className="w-4 h-4" /> {c.alwaysAvailable}
                   </div>
                 </CardContent>
               </Card>
@@ -1026,34 +1389,34 @@ const ChatbotPage = () => {
                       <Facebook className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Facebook Page</CardTitle>
-                      <CardDescription>Автоматски одговарајте на DM пораки</CardDescription>
+                      <CardTitle className="text-base">{c.facebookPage}</CardTitle>
+                      <CardDescription>{c.autoReplyDM}</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   {connections.filter((c) => c.status === "active").length > 0 ? (
                     <div className="space-y-3">
-                      {connections.filter((c) => c.status === "active").map((conn) => (
+                      {connections.filter((cn) => cn.status === "active").map((conn) => (
                         <div key={conn._id} className="flex items-center justify-between bg-muted rounded-lg px-4 py-3">
                           <div>
                             <p className="text-sm font-medium text-foreground">{conn.pageName}</p>
-                            <p className="text-xs text-green-600">Поврзана</p>
+                            <p className="text-xs text-green-600">{c.connected}</p>
                             {conn.instagramAccountId && (
                               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                <Instagram className="w-3 h-3" /> Instagram поврзан
+                                <Instagram className="w-3 h-3" /> {c.instagramConnected}
                               </p>
                             )}
                           </div>
                           <Button variant="outline" size="sm" onClick={() => handleDisconnectPage(conn.pageId)}>
-                            Дисконектирај
+                            {c.disconnect}
                           </Button>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <Button onClick={handleConnectFacebook} className="w-full gap-2">
-                      <Facebook className="w-4 h-4" /> Поврзи Facebook Page
+                      <Facebook className="w-4 h-4" /> {c.connectFacebookPage}
                     </Button>
                   )}
                 </CardContent>
@@ -1067,20 +1430,19 @@ const ChatbotPage = () => {
                       <Instagram className="w-5 h-5 text-pink-500" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Instagram</CardTitle>
-                      <CardDescription>Автоматски одговарајте на Instagram DM</CardDescription>
+                      <CardTitle className="text-base">{c.instagramTitle}</CardTitle>
+                      <CardDescription>{c.autoReplyInstagramDM}</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {connections.some((c) => c.instagramAccountId && c.status === "active") ? (
+                  {connections.some((cn) => cn.instagramAccountId && cn.status === "active") ? (
                     <div className="flex items-center gap-2 text-sm text-green-600">
-                      <Check className="w-4 h-4" /> Поврзан преку Facebook Page
+                      <Check className="w-4 h-4" /> {c.connectedViaFacebook}
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Instagram се поврзува автоматски кога ја поврзувате вашата Facebook Page
-                      (ако имате поврзана Instagram Business сметка).
+                      {c.instagramAutoConnect}
                     </p>
                   )}
                 </CardContent>
@@ -1093,8 +1455,8 @@ const ChatbotPage = () => {
                       <Link2 className="w-5 h-5 text-emerald-500" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Споделлив линк</CardTitle>
-                      <CardDescription>Директен линк до вашиот chatbot</CardDescription>
+                      <CardTitle className="text-base">{c.shareableLink}</CardTitle>
+                      <CardDescription>{c.directLink}</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -1132,16 +1494,16 @@ const ChatbotPage = () => {
                       </div>
                       {chatbot.status !== "active" && (
                         <p className="text-xs text-amber-600">
-                          Chatbot-от мора да биде активен за линкот да работи.
+                          {c.chatbotMustBeActive}
                         </p>
                       )}
                       <p className="text-xs text-muted-foreground">
-                        Споделете го овој линк за директен пристап до вашиот chatbot без потреба од веб-страна.
+                        {c.shareLinkDesc}
                       </p>
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Споделливиот линк ќе биде достапен откако chatbot-от ќе биде зачуван.
+                      {c.shareLinkPending}
                     </p>
                   )}
                 </CardContent>
@@ -1158,9 +1520,9 @@ const ChatbotPage = () => {
                     <div className="flex items-center gap-3">
                       <Code className="w-5 h-5 text-primary" />
                       <div>
-                        <CardTitle>Embed код за веб-страна</CardTitle>
+                        <CardTitle>{c.embedCode}</CardTitle>
                         <CardDescription>
-                          Копирајте го кодот и ставете го на вашата веб-страна.
+                          {c.embedCopyDesc}
                         </CardDescription>
                       </div>
                     </div>
@@ -1168,14 +1530,14 @@ const ChatbotPage = () => {
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm" className="gap-2">
                           <BookOpen className="w-4 h-4" />
-                          Упатство
+                          {c.guide}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
                         <DialogHeader>
-                          <DialogTitle className="text-xl">Како да го додадете chatbot-от на вашата веб-страна</DialogTitle>
+                          <DialogTitle className="text-xl">{c.howToAdd}</DialogTitle>
                           <DialogDescription>
-                            Чекор по чекор упатство за инсталација
+                            {c.stepByStep}
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-6 py-4">
@@ -1183,9 +1545,9 @@ const ChatbotPage = () => {
                           <div className="flex gap-4">
                             <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-sm">1</div>
                             <div>
-                              <h4 className="font-semibold text-foreground mb-1">Копирајте го кодот</h4>
+                              <h4 className="font-semibold text-foreground mb-1">{c.step1Title}</h4>
                               <p className="text-sm text-muted-foreground">
-                                Кликнете на копчето „Копирај код" подолу. Кодот автоматски ќе се копира.
+                                {c.step1Desc}
                               </p>
                             </div>
                           </div>
@@ -1194,30 +1556,30 @@ const ChatbotPage = () => {
                           <div className="flex gap-4">
                             <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-sm">2</div>
                             <div>
-                              <h4 className="font-semibold text-foreground mb-1">Отворете го HTML-от на вашата страна</h4>
+                              <h4 className="font-semibold text-foreground mb-1">{c.step2Title}</h4>
                               <p className="text-sm text-muted-foreground mb-2">
-                                Пристапете до кодот на вашата веб-страна. Зависно од платформата:
+                                {c.step2Desc}
                               </p>
                               <div className="space-y-2 text-sm">
                                 <div className="bg-muted rounded-lg px-3 py-2">
-                                  <span className="font-medium text-foreground">WordPress:</span>{" "}
-                                  <span className="text-muted-foreground">Appearance → Theme Editor → footer.php, или користете plugin како „Insert Headers and Footers"</span>
+                                  <span className="font-medium text-foreground">{c.wordpress}</span>{" "}
+                                  <span className="text-muted-foreground">{c.wordpressDesc}</span>
                                 </div>
                                 <div className="bg-muted rounded-lg px-3 py-2">
-                                  <span className="font-medium text-foreground">Wix:</span>{" "}
-                                  <span className="text-muted-foreground">Settings → Custom Code → Add Code → Body - End</span>
+                                  <span className="font-medium text-foreground">{c.wix}</span>{" "}
+                                  <span className="text-muted-foreground">{c.wixDesc}</span>
                                 </div>
                                 <div className="bg-muted rounded-lg px-3 py-2">
-                                  <span className="font-medium text-foreground">Shopify:</span>{" "}
-                                  <span className="text-muted-foreground">Online Store → Themes → Edit Code → theme.liquid</span>
+                                  <span className="font-medium text-foreground">{c.shopify}</span>{" "}
+                                  <span className="text-muted-foreground">{c.shopifyDesc}</span>
                                 </div>
                                 <div className="bg-muted rounded-lg px-3 py-2">
-                                  <span className="font-medium text-foreground">Squarespace:</span>{" "}
-                                  <span className="text-muted-foreground">Settings → Advanced → Code Injection → Footer</span>
+                                  <span className="font-medium text-foreground">{c.squarespace}</span>{" "}
+                                  <span className="text-muted-foreground">{c.squarespaceDesc}</span>
                                 </div>
                                 <div className="bg-muted rounded-lg px-3 py-2">
-                                  <span className="font-medium text-foreground">Custom HTML:</span>{" "}
-                                  <span className="text-muted-foreground">Отворете го главниот HTML фајл (обично index.html)</span>
+                                  <span className="font-medium text-foreground">{c.customHtml}</span>{" "}
+                                  <span className="text-muted-foreground">{c.customHtmlDesc}</span>
                                 </div>
                               </div>
                             </div>
@@ -1227,14 +1589,14 @@ const ChatbotPage = () => {
                           <div className="flex gap-4">
                             <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-sm">3</div>
                             <div>
-                              <h4 className="font-semibold text-foreground mb-1">Залепете го кодот пред &lt;/body&gt;</h4>
+                              <h4 className="font-semibold text-foreground mb-1">{c.step3Title}</h4>
                               <p className="text-sm text-muted-foreground mb-2">
-                                Најдете го затворачкиот <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">&lt;/body&gt;</code> таг и
-                                залепете го кодот <strong>непосредно пред него</strong>:
+                                {c.step3Desc} <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">&lt;/body&gt;</code> {c.step3Desc2}{" "}
+                                <strong>{c.step3Desc3}</strong>:
                               </p>
                               <div className="bg-muted rounded-lg p-3 font-mono text-xs text-muted-foreground leading-relaxed">
                                 <div>&nbsp;&nbsp;&nbsp;&nbsp;...</div>
-                                <div className="text-primary font-medium">&nbsp;&nbsp;&nbsp;&nbsp;{'<!-- Залепете го кодот ТУКА -->'}</div>
+                                <div className="text-primary font-medium">&nbsp;&nbsp;&nbsp;&nbsp;{c.step3Comment}</div>
                                 <div>&nbsp;&nbsp;&lt;/body&gt;</div>
                                 <div>&lt;/html&gt;</div>
                               </div>
@@ -1245,40 +1607,39 @@ const ChatbotPage = () => {
                           <div className="flex gap-4">
                             <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-sm">4</div>
                             <div>
-                              <h4 className="font-semibold text-foreground mb-1">Зачувајте и проверете</h4>
+                              <h4 className="font-semibold text-foreground mb-1">{c.step4Title}</h4>
                               <p className="text-sm text-muted-foreground">
-                                Зачувајте ги промените и отворете ја вашата веб-страна. Во долниот десен агол треба да се
-                                појави иконата на chatbot-от. Кликнете на неа за да го тестирате.
+                                {c.step4Desc}
                               </p>
                             </div>
                           </div>
 
                           {/* Tips */}
                           <div className="border-t border-border pt-4">
-                            <h4 className="font-semibold text-foreground mb-3">Корисни совети</h4>
+                            <h4 className="font-semibold text-foreground mb-3">{c.usefulTips}</h4>
                             <ul className="space-y-2 text-sm text-muted-foreground">
                               <li className="flex gap-2">
                                 <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                                Кодот треба да се додаде само <strong className="text-foreground">еднаш</strong> — ќе работи на сите страници.
+                                {c.tipOnce} <strong className="text-foreground">{c.tipOnceB}</strong> {c.tipOnceEnd}
                               </li>
                               <li className="flex gap-2">
                                 <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                                Chatbot-от мора да биде <strong className="text-foreground">активиран</strong> (статус: Active) за да се прикажува.
+                                {c.tipActivated} <strong className="text-foreground">{c.tipActivatedB}</strong> {c.tipActivatedEnd}
                               </li>
                               <li className="flex gap-2">
                                 <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                                Промените во подесувањата (prompt, боја, поздрав) се применуваат <strong className="text-foreground">веднаш</strong> — не треба повторно да го додавате кодот.
+                                {c.tipImmediate} <strong className="text-foreground">{c.tipImmediateB}</strong> {c.tipImmediateEnd}
                               </li>
                               <li className="flex gap-2">
                                 <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                                Ако имате проблеми, проверете дали вашиот домен е додаден во „Дозволени домени" во подесувањата.
+                                {c.tipDomains}
                               </li>
                             </ul>
                           </div>
                         </div>
                         <DialogFooter>
                           <DialogTrigger asChild>
-                            <Button>Разбрав</Button>
+                            <Button>{c.gotIt}</Button>
                           </DialogTrigger>
                         </DialogFooter>
                       </DialogContent>
@@ -1299,12 +1660,12 @@ const ChatbotPage = () => {
                   </div>
                   <Button onClick={handleCopyEmbed} className="gap-2">
                     {embedCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    {embedCopied ? "Копирано!" : "Копирај код"}
+                    {embedCopied ? c.copied : c.copyCode}
                   </Button>
 
                   {chatbot.status !== "active" && (
                     <p className="text-sm text-yellow-600 mt-4">
-                      Chatbot-от мора да биде активиран за виџетот да работи. Кликнете „Активирај" горе.
+                      {c.mustBeActiveForWidget}
                     </p>
                   )}
                 </CardContent>

@@ -11,6 +11,137 @@ import {
 import { useAuth, PLAN_NAMES } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/language";
+import LanguageToggle from "@/components/LanguageToggle";
+
+const t = {
+  en: {
+    back: "Back",
+    upgradeTitle: "Upgrade your plan",
+    currentPlan: "Current plan:",
+    errorGenerating: "Error generating invoice.",
+    errorGeneric: "Error.",
+    current: "Current",
+    lower: "Lower",
+    mkdYearly: "MKD /yearly",
+    mkdMonthly: "MKD /monthly",
+    creditsMonthly: "credits (messages) per month",
+    chatbots: "chatbots",
+    sources: "sources",
+    allIntegrations: "All integrations",
+    prioritySupport: "Priority support",
+    monthly: "Monthly",
+    yearly: "Yearly",
+    annual: "Annual",
+    save: "Save",
+    continueToPayment: "Continue to payment",
+    billingDetails: "Billing details",
+    companyName: "Company name *",
+    taxId: "Tax ID (EDB) *",
+    address: "Address *",
+    city: "City *",
+    phone: "Phone",
+    invoiceEmail: "Invoice email *",
+    generateProInvoice: "Generate pro-invoice",
+    proInvoiceGenerated: "Pro-invoice generated. Make a payment to activate.",
+    afterPaymentConfirmation: "After payment confirmation (1-2 business days), your plan will be automatically upgraded.",
+    paymentConfirmed: "Payment confirmed! Your plan has been upgraded.",
+    proInvoice: "Pro-invoice",
+    awaitingPayment: "Awaiting payment",
+    paid: "Paid",
+    cancelled: "Cancelled",
+    plan: "Plan",
+    period: "Period",
+    amount: "Amount",
+    date: "Date",
+    company: "Company",
+    taxIdLabel: "Tax ID:",
+    paymentInstructions: "Payment instructions",
+    recipient: "Recipient",
+    bank: "Bank",
+    ibanAccount: "IBAN / Account",
+    referenceNumber: "Reference number (payment purpose)",
+    mandatoryRefNote: (ref: string) =>
+      `You must enter the number ${ref} in the "payment purpose" / "reference number" field when making the payment, so we can identify your payment.`,
+    cancelProInvoice: "Cancel pro-invoice",
+    generateNew: "Generate new",
+    invoiceHistory: "Invoice history",
+    pending: "Pending",
+    expired: "Expired",
+    // Placeholders
+    placeholderCompany: "e.g. Acme Corp",
+    placeholderEdb: "e.g. MK4030990123456",
+    placeholderAddress: "e.g. 123 Main St",
+    placeholderCity: "e.g. Skopje",
+    placeholderPhone: "e.g. 070 123 456",
+    placeholderEmail: "info@company.com",
+    // Date locale
+    dateLocale: "en-US" as const,
+  },
+  mk: {
+    back: "Назад",
+    upgradeTitle: "Надградете го вашиот план",
+    currentPlan: "Моментален план:",
+    errorGenerating: "Грешка при генерирање.",
+    errorGeneric: "Грешка.",
+    current: "Моментален",
+    lower: "Понизок",
+    mkdYearly: "МКД /годишно",
+    mkdMonthly: "МКД /месечно",
+    creditsMonthly: "кредити (пораки) месечно",
+    chatbots: "chatbot-и",
+    sources: "извори",
+    allIntegrations: "Сите интеграции",
+    prioritySupport: "Приоритетна поддршка",
+    monthly: "Месечно",
+    yearly: "Годишно",
+    annual: "Годишно",
+    save: "Заштеди",
+    continueToPayment: "Продолжи кон плаќање",
+    billingDetails: "Податоци за фактурирање",
+    companyName: "Назив на фирма *",
+    taxId: "ЕДБ (Единствен Даночен Број) *",
+    address: "Адреса *",
+    city: "Град *",
+    phone: "Телефон",
+    invoiceEmail: "Email за фактура *",
+    generateProInvoice: "Генерирај про-фактура",
+    proInvoiceGenerated: "Про-фактурата е генерирана. Извршете уплата за активирање.",
+    afterPaymentConfirmation: "По потврда на уплатата (1-2 работни дена), вашиот план ќе биде автоматски надграден.",
+    paymentConfirmed: "Уплатата е потврдена! Вашиот план е надграден.",
+    proInvoice: "Про-фактура",
+    awaitingPayment: "Чека уплата",
+    paid: "Платена",
+    cancelled: "Откажана",
+    plan: "План",
+    period: "Период",
+    amount: "Износ",
+    date: "Датум",
+    company: "Фирма",
+    taxIdLabel: "ЕДБ:",
+    paymentInstructions: "Инструкции за уплата",
+    recipient: "Примач",
+    bank: "Банка",
+    ibanAccount: "IBAN / Сметка",
+    referenceNumber: "Повикување на број (цел на дознака)",
+    mandatoryRefNote: (ref: string) =>
+      `Задолжително внесете го бројот ${ref} во полето „цел на дознака" / „повикување на број" при уплатата, за да можеме да ја идентификуваме вашата уплата.`,
+    cancelProInvoice: "Откажи про-фактура",
+    generateNew: "Генерирај нова",
+    invoiceHistory: "Историја на про-фактури",
+    pending: "Чека",
+    expired: "Истечена",
+    // Placeholders
+    placeholderCompany: "нпр. Мебел Дизајн ДООЕЛ",
+    placeholderEdb: "нпр. MK4030990123456",
+    placeholderAddress: "нпр. ул. Македонија 5",
+    placeholderCity: "нпр. Скопје",
+    placeholderPhone: "нпр. 070 123 456",
+    placeholderEmail: "info@kompanija.mk",
+    // Date locale
+    dateLocale: "mk-MK" as const,
+  },
+};
 
 interface Invoice {
   _id: string;
@@ -53,6 +184,8 @@ const PLAN_PRICES = {
 const UpgradePage = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { lang } = useLanguage();
+  const c = t[lang];
 
   // State
   const [status, setStatus] = useState<UpgradeStatus | null>(null);
@@ -138,7 +271,7 @@ const UpgradePage = () => {
       const inv = await api.get<Invoice[]>("/invoices");
       setInvoices(inv);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при генерирање.");
+      setError(err instanceof Error ? err.message : c.errorGenerating);
     } finally {
       setCreating(false);
     }
@@ -152,7 +285,7 @@ const UpgradePage = () => {
       const inv = await api.get<Invoice[]>("/invoices");
       setInvoices(inv);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка.");
+      setError(err instanceof Error ? err.message : c.errorGeneric);
     }
   };
 
@@ -181,17 +314,20 @@ const UpgradePage = () => {
             <Bot className="w-7 h-7 text-primary" />
             NexaAI
           </Link>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Назад
-          </Button>
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              {c.back}
+            </Button>
+          </div>
         </div>
       </nav>
 
       <div className="container max-w-3xl py-10">
-        <h1 className="font-display font-bold text-3xl text-foreground mb-2">Надградете го вашиот план</h1>
+        <h1 className="font-display font-bold text-3xl text-foreground mb-2">{c.upgradeTitle}</h1>
         <p className="text-muted-foreground mb-8">
-          Моментален план: <span className="font-semibold text-foreground">{PLAN_NAMES[currentPlan]}</span>
+          {c.currentPlan} <span className="font-semibold text-foreground">{PLAN_NAMES[currentPlan]}</span>
         </p>
 
         {error && (
@@ -228,7 +364,7 @@ const UpgradePage = () => {
                         <CardTitle className="font-display text-xl">{PLAN_NAMES[plan]}</CardTitle>
                         {isCurrentOrLower && (
                           <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
-                            {plan === currentPlan ? "Моментален" : "Понизок"}
+                            {plan === currentPlan ? c.current : c.lower}
                           </span>
                         )}
                         {selectedPlan === plan && !isCurrentOrLower && (
@@ -244,15 +380,15 @@ const UpgradePage = () => {
                           {selectedPeriod === "annual" ? prices.annual.toLocaleString() : prices.monthly.toLocaleString()}
                         </span>
                         <span className="text-sm text-muted-foreground ml-1">
-                          МКД {selectedPeriod === "annual" ? "/годишно" : "/месечно"}
+                          {selectedPeriod === "annual" ? c.mkdYearly : c.mkdMonthly}
                         </span>
                       </div>
                       <ul className="space-y-1.5 text-sm text-muted-foreground">
-                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "300" : "500"} кредити (пораки) месечно</li>
-                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "3" : "10"} chatbot-и</li>
-                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "10" : "50"} извори</li>
-                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> Сите интеграции</li>
-                        {plan === 2 && <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> Приоритетна поддршка</li>}
+                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "300" : "500"} {c.creditsMonthly}</li>
+                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "3" : "10"} {c.chatbots}</li>
+                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {plan === 1 ? "10" : "50"} {c.sources}</li>
+                        <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {c.allIntegrations}</li>
+                        {plan === 2 && <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-primary" /> {c.prioritySupport}</li>}
                       </ul>
                     </CardContent>
                   </Card>
@@ -263,7 +399,7 @@ const UpgradePage = () => {
             {/* Period toggle */}
             <div className="flex items-center justify-center gap-3">
               <span className={cn("text-sm font-medium", selectedPeriod === "monthly" ? "text-foreground" : "text-muted-foreground")}>
-                Месечно
+                {c.monthly}
               </span>
               <button
                 onClick={() => setSelectedPeriod(selectedPeriod === "monthly" ? "annual" : "monthly")}
@@ -278,7 +414,7 @@ const UpgradePage = () => {
                 )} />
               </button>
               <span className={cn("text-sm font-medium", selectedPeriod === "annual" ? "text-foreground" : "text-muted-foreground")}>
-                Годишно <span className="text-primary text-xs font-semibold">Заштеди</span>
+                {c.yearly} <span className="text-primary text-xs font-semibold">{c.save}</span>
               </span>
             </div>
 
@@ -289,7 +425,7 @@ const UpgradePage = () => {
               disabled={selectedPlan <= currentPlan}
             >
               <CreditCard className="w-4 h-4" />
-              Продолжи кон плаќање
+              {c.continueToPayment}
             </Button>
           </div>
         )}
@@ -300,10 +436,10 @@ const UpgradePage = () => {
             <div className="flex items-center gap-2 mb-2">
               <Button variant="ghost" size="sm" onClick={() => setStep("select")} className="gap-1">
                 <ArrowLeft className="w-4 h-4" />
-                Назад
+                {c.back}
               </Button>
               <span className="text-sm text-muted-foreground">
-                {PLAN_NAMES[selectedPlan]} · {selectedPeriod === "annual" ? "Годишно" : "Месечно"} ·{" "}
+                {PLAN_NAMES[selectedPlan]} · {selectedPeriod === "annual" ? c.annual : c.monthly} ·{" "}
                 <span className="font-semibold text-foreground">
                   {PLAN_PRICES[selectedPlan][selectedPeriod].toLocaleString()} МКД
                 </span>
@@ -314,70 +450,70 @@ const UpgradePage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Building2 className="w-5 h-5 text-primary" />
-                  Податоци за фактурирање
+                  {c.billingDetails}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="companyName">Назив на фирма *</Label>
+                    <Label htmlFor="companyName">{c.companyName}</Label>
                     <Input
                       id="companyName"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="нпр. Мебел Дизајн ДООЕЛ"
+                      placeholder={c.placeholderCompany}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edb">ЕДБ (Единствен Даночен Број) *</Label>
+                    <Label htmlFor="edb">{c.taxId}</Label>
                     <Input
                       id="edb"
                       value={edb}
                       onChange={(e) => setEdb(e.target.value)}
-                      placeholder="нпр. MK4030990123456"
+                      placeholder={c.placeholderEdb}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="companyAddress">Адреса *</Label>
+                  <Label htmlFor="companyAddress">{c.address}</Label>
                   <Input
                     id="companyAddress"
                     value={companyAddress}
                     onChange={(e) => setCompanyAddress(e.target.value)}
-                    placeholder="нпр. ул. Македонија 5"
+                    placeholder={c.placeholderAddress}
                   />
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="companyCity">Град *</Label>
+                    <Label htmlFor="companyCity">{c.city}</Label>
                     <Input
                       id="companyCity"
                       value={companyCity}
                       onChange={(e) => setCompanyCity(e.target.value)}
-                      placeholder="нпр. Скопје"
+                      placeholder={c.placeholderCity}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="contactPhone">Телефон</Label>
+                    <Label htmlFor="contactPhone">{c.phone}</Label>
                     <Input
                       id="contactPhone"
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
-                      placeholder="нпр. 070 123 456"
+                      placeholder={c.placeholderPhone}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="contactEmail">Email за фактура *</Label>
+                  <Label htmlFor="contactEmail">{c.invoiceEmail}</Label>
                   <Input
                     id="contactEmail"
                     type="email"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="info@kompanija.mk"
+                    placeholder={c.placeholderEmail}
                   />
                 </div>
               </CardContent>
@@ -390,7 +526,7 @@ const UpgradePage = () => {
               size="lg"
             >
               {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-              Генерирај про-фактура
+              {c.generateProInvoice}
             </Button>
           </div>
         )}
@@ -403,10 +539,10 @@ const UpgradePage = () => {
                 <Clock className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                    Про-фактурата е генерирана. Извршете уплата за активирање.
+                    {c.proInvoiceGenerated}
                   </p>
                   <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                    По потврда на уплатата (1-2 работни дена), вашиот план ќе биде автоматски надграден.
+                    {c.afterPaymentConfirmation}
                   </p>
                 </div>
               </div>
@@ -416,7 +552,7 @@ const UpgradePage = () => {
               <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
                 <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                  Уплатата е потврдена! Вашиот план е надграден.
+                  {c.paymentConfirmed}
                 </p>
               </div>
             )}
@@ -427,7 +563,7 @@ const UpgradePage = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <FileText className="w-5 h-5 text-primary" />
-                    Про-фактура {createdInvoice.invoiceNumber}
+                    {c.proInvoice} {createdInvoice.invoiceNumber}
                   </CardTitle>
                   <span className={cn(
                     "text-xs font-medium px-2.5 py-1 rounded-full",
@@ -435,37 +571,37 @@ const UpgradePage = () => {
                     createdInvoice.status === "paid" && "bg-green-100 text-green-700",
                     createdInvoice.status === "cancelled" && "bg-red-100 text-red-700",
                   )}>
-                    {createdInvoice.status === "pending" && "Чека уплата"}
-                    {createdInvoice.status === "paid" && "Платена"}
-                    {createdInvoice.status === "cancelled" && "Откажана"}
+                    {createdInvoice.status === "pending" && c.awaitingPayment}
+                    {createdInvoice.status === "paid" && c.paid}
+                    {createdInvoice.status === "cancelled" && c.cancelled}
                   </span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-muted-foreground">План</span>
+                    <span className="text-muted-foreground">{c.plan}</span>
                     <p className="font-medium">{PLAN_NAMES[createdInvoice.plan]}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Период</span>
-                    <p className="font-medium">{createdInvoice.period === "annual" ? "Годишно" : "Месечно"}</p>
+                    <span className="text-muted-foreground">{c.period}</span>
+                    <p className="font-medium">{createdInvoice.period === "annual" ? c.annual : c.monthly}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Износ</span>
+                    <span className="text-muted-foreground">{c.amount}</span>
                     <p className="font-bold text-lg">{createdInvoice.amount.toLocaleString()} {createdInvoice.currency}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Датум</span>
-                    <p className="font-medium">{new Date(createdInvoice.createdAt).toLocaleDateString("mk-MK")}</p>
+                    <span className="text-muted-foreground">{c.date}</span>
+                    <p className="font-medium">{new Date(createdInvoice.createdAt).toLocaleDateString(c.dateLocale)}</p>
                   </div>
                 </div>
 
                 <div className="border-t pt-4 text-sm">
-                  <span className="text-muted-foreground">Фирма</span>
+                  <span className="text-muted-foreground">{c.company}</span>
                   <p className="font-medium">{createdInvoice.companyName}</p>
                   <p className="text-muted-foreground">{createdInvoice.companyAddress}, {createdInvoice.companyCity}</p>
-                  <p className="text-muted-foreground">ЕДБ: {createdInvoice.edb}</p>
+                  <p className="text-muted-foreground">{c.taxIdLabel} {createdInvoice.edb}</p>
                 </div>
               </CardContent>
             </Card>
@@ -476,24 +612,24 @@ const UpgradePage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <CreditCard className="w-5 h-5 text-primary" />
-                    Инструкции за уплата
+                    {c.paymentInstructions}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <PaymentRow
-                    label="Примач"
+                    label={c.recipient}
                     value={bankDetails.accountHolder}
                     onCopy={() => copyToClipboard(bankDetails.accountHolder, "holder")}
                     isCopied={copied === "holder"}
                   />
                   <PaymentRow
-                    label="Банка"
+                    label={c.bank}
                     value={bankDetails.bankName}
                     onCopy={() => copyToClipboard(bankDetails.bankName, "bank")}
                     isCopied={copied === "bank"}
                   />
                   <PaymentRow
-                    label="IBAN / Сметка"
+                    label={c.ibanAccount}
                     value={bankDetails.iban}
                     onCopy={() => copyToClipboard(bankDetails.iban, "iban")}
                     isCopied={copied === "iban"}
@@ -505,14 +641,14 @@ const UpgradePage = () => {
                     isCopied={copied === "swift"}
                   />
                   <PaymentRow
-                    label="Износ"
+                    label={c.amount}
                     value={`${createdInvoice.amount.toLocaleString()} ${createdInvoice.currency}`}
                     onCopy={() => copyToClipboard(String(createdInvoice.amount), "amount")}
                     isCopied={copied === "amount"}
                   />
                   <div className="border-t pt-3">
                     <PaymentRow
-                      label="Повикување на број (цел на дознака)"
+                      label={c.referenceNumber}
                       value={createdInvoice.paymentReference}
                       onCopy={() => copyToClipboard(createdInvoice.paymentReference, "ref")}
                       isCopied={copied === "ref"}
@@ -520,8 +656,7 @@ const UpgradePage = () => {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Задолжително внесете го бројот <strong>{createdInvoice.paymentReference}</strong> во
-                    полето „цел на дознака" / „повикување на број" при уплатата, за да можеме да ја идентификуваме вашата уплата.
+                    {c.mandatoryRefNote(createdInvoice.paymentReference)}
                   </p>
                 </CardContent>
               </Card>
@@ -536,7 +671,7 @@ const UpgradePage = () => {
                   className="gap-2"
                 >
                   <X className="w-4 h-4" />
-                  Откажи про-фактура
+                  {c.cancelProInvoice}
                 </Button>
               )}
               <Button
@@ -547,7 +682,7 @@ const UpgradePage = () => {
                 }}
                 className="gap-2"
               >
-                {createdInvoice.status === "pending" ? "Генерирај нова" : "Назад"}
+                {createdInvoice.status === "pending" ? c.generateNew : c.back}
               </Button>
             </div>
           </div>
@@ -556,7 +691,7 @@ const UpgradePage = () => {
         {/* ─── Past invoices ─── */}
         {invoices.length > 0 && (
           <div className="mt-12">
-            <h2 className="font-display font-bold text-xl text-foreground mb-4">Историја на про-фактури</h2>
+            <h2 className="font-display font-bold text-xl text-foreground mb-4">{c.invoiceHistory}</h2>
             <div className="space-y-3">
               {invoices.map((inv) => (
                 <Card key={inv._id} className="hover:shadow-sm transition-shadow">
@@ -566,7 +701,7 @@ const UpgradePage = () => {
                       <div>
                         <p className="text-sm font-medium">{inv.invoiceNumber}</p>
                         <p className="text-xs text-muted-foreground">
-                          {PLAN_NAMES[inv.plan]} · {inv.period === "annual" ? "Годишно" : "Месечно"} · {new Date(inv.createdAt).toLocaleDateString("mk-MK")}
+                          {PLAN_NAMES[inv.plan]} · {inv.period === "annual" ? c.annual : c.monthly} · {new Date(inv.createdAt).toLocaleDateString(c.dateLocale)}
                         </p>
                       </div>
                     </div>
@@ -579,10 +714,10 @@ const UpgradePage = () => {
                         inv.status === "cancelled" && "bg-red-100 text-red-700",
                         inv.status === "expired" && "bg-gray-100 text-gray-700",
                       )}>
-                        {inv.status === "pending" && "Чека"}
-                        {inv.status === "paid" && "Платена"}
-                        {inv.status === "cancelled" && "Откажана"}
-                        {inv.status === "expired" && "Истечена"}
+                        {inv.status === "pending" && c.pending}
+                        {inv.status === "paid" && c.paid}
+                        {inv.status === "cancelled" && c.cancelled}
+                        {inv.status === "expired" && c.expired}
                       </span>
                       <Button
                         variant="ghost"

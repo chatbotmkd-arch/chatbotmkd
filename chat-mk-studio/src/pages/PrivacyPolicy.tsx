@@ -8,7 +8,7 @@ const en = {
   sections: [
     {
       heading: "1. Introduction",
-      body: "NexaAI (\"we\", \"our\", \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our chatbot platform and services.",
+      body: "NexaAI (\"we\", \"our\", \"us\") is a platform operated by **THY BUSINESS GUIDE DOOEL Skopje**, Bul. Partizanski odred no. 102/2-14, Skopje, Republic of North Macedonia. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our chatbot platform and services.\n\n**Data Protection Officer**: Martin Boshkoski — info@nexa.mk",
     },
     {
       heading: "2. Information We Collect",
@@ -86,6 +86,9 @@ To exercise any of these rights, contact us at info@nexa.mk.`,
       heading: "9. Contact Information",
       body: `If you have any questions about this Privacy Policy, please contact us:
 
+• **Company**: THY BUSINESS GUIDE DOOEL Skopje
+• **Address**: Bul. Partizanski odred no. 102/2-14, Skopje, Republic of North Macedonia
+• **Data Protection Officer**: Martin Boshkoski
 • **Email**: info@nexa.mk`,
     },
   ],
@@ -97,7 +100,7 @@ const mk = {
   sections: [
     {
       heading: "1. Вовед",
-      body: "NexaAI (\"ние\", \"нашиот\") е посветен на заштитата на вашата приватност. Оваа Политика на приватност објаснува како ги собираме, користиме и штитиме вашите информации.",
+      body: "NexaAI (\"ние\", \"нашиот\") е платформа управувана од **Друштво за услуги ТХУ БУЗИНЕСС ГУИДЕ ДООЕЛ Скопје**, Бул. Партизански одреди бр. 102/2-14, Скопје, Република Северна Македонија. Ние сме посветени на заштитата на вашата приватност. Оваа Политика на приватност објаснува како ги собираме, користиме и штитиме вашите информации.\n\n**Офицер за заштита на лични податоци**: Мартин Бошкоски — info@nexa.mk",
     },
     {
       heading: "2. Информации кои ги собираме",
@@ -173,6 +176,9 @@ const mk = {
       heading: "9. Контакт информации",
       body: `Доколку имате прашања за оваа Политика на приватност:
 
+• **Фирма**: Друштво за услуги ТХУ БУЗИНЕСС ГУИДЕ ДООЕЛ Скопје
+• **Адреса**: Бул. Партизански одреди бр. 102/2-14, Скопје, Република Северна Македонија
+• **Офицер за заштита на лични податоци**: Мартин Бошкоски
 • **Email**: info@nexa.mk`,
     },
   ],

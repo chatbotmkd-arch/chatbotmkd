@@ -6,9 +6,38 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bot, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useLanguage } from "@/lib/language";
+import LanguageToggle from "@/components/LanguageToggle";
+
+const t = {
+  en: {
+    title: "Log in",
+    subtitle: "Enter your credentials to continue",
+    email: "Email",
+    emailPlaceholder: "you@email.com",
+    password: "Password",
+    submit: "Log in",
+    noAccount: "Don't have an account?",
+    signupLink: "Sign up",
+    error: "Login failed",
+  },
+  mk: {
+    title: "Најави се",
+    subtitle: "Внесете ги вашите податоци за да продолжите",
+    email: "Email",
+    emailPlaceholder: "vase@email.com",
+    password: "Лозинка",
+    submit: "Најави се",
+    noAccount: "Немате сметка?",
+    signupLink: "Регистрирајте се",
+    error: "Грешка при најава",
+  },
+};
 
 const Login = () => {
   const { login } = useAuth();
+  const { lang } = useLanguage();
+  const c = t[lang];
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +53,7 @@ const Login = () => {
       await login(email, password);
       navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при најава");
+      setError(err instanceof Error ? err.message : c.error);
     } finally {
       setLoading(false);
     }
@@ -33,17 +62,18 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="flex items-center justify-between mb-8">
           <Link to="/" className="inline-flex items-center gap-2 font-display font-bold text-2xl text-foreground">
             <Bot className="w-8 h-8 text-primary" />
             NexaAI
           </Link>
+          <LanguageToggle />
         </div>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="font-display text-2xl">Најави се</CardTitle>
-            <CardDescription>Внесете ги вашите податоци за да продолжите</CardDescription>
+            <CardTitle className="font-display text-2xl">{c.title}</CardTitle>
+            <CardDescription>{c.subtitle}</CardDescription>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
@@ -55,11 +85,11 @@ const Login = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{c.email}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="vase@email.com"
+                  placeholder={c.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -67,7 +97,7 @@ const Login = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Лозинка</Label>
+                <Label htmlFor="password">{c.password}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -86,12 +116,12 @@ const Login = () => {
                 disabled={loading}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Најави се
+                {c.submit}
               </Button>
               <p className="text-sm text-muted-foreground">
-                Немате сметка?{" "}
+                {c.noAccount}{" "}
                 <Link to="/signup" className="text-primary font-medium hover:underline">
-                  Регистрирајте се
+                  {c.signupLink}
                 </Link>
               </p>
             </CardFooter>

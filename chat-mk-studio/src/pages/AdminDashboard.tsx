@@ -17,6 +17,8 @@ import {
   Receipt,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useLanguage } from "@/lib/language";
+import LanguageToggle from "@/components/LanguageToggle";
 import { api } from "@/lib/api";
 
 // ── Types ─────────────────────────────────────────────────────
@@ -71,16 +73,93 @@ const planColors: Record<number, string> = {
   2: "bg-purple-100 text-purple-700",
 };
 
-const planNames: Record<number, string> = {
-  0: "Бесплатен",
-  1: "Стартер",
-  2: "Про",
+const t = {
+  en: {
+    planNames: { 0: "Free", 1: "Starter", 2: "Pro" } as Record<number, string>,
+    accessDenied: "Access denied",
+    backToDashboard: "Back to Dashboard",
+    adminDashboard: "Admin Dashboard",
+    users: "Users",
+    paid: "Paid",
+    chatbots: "Chatbots",
+    messagesToday: "Messages today",
+    awaitingPayment: "Awaiting payment",
+    invoices: "Invoices",
+    // Users table
+    userCol: "User",
+    plan: "Plan",
+    status: "Status",
+    messagesCol: "Messages",
+    chatbotsCol: "Chatbots",
+    registered: "Registered",
+    actions: "Actions",
+    // Trial status
+    active: "Active",
+    expired: "Expired",
+    days: "d",
+    // Invoices table
+    invoice: "Invoice",
+    client: "Client",
+    amount: "Amount",
+    date: "Date",
+    taxId: "Tax ID:",
+    yearly: "yearly",
+    monthly: "monthly",
+    noInvoices: "No invoices",
+    // Invoice statuses
+    statusPending: "Awaiting payment",
+    statusPaid: "Paid",
+    statusCancelled: "Cancelled",
+    statusExpired: "Expired",
+    markPaid: "Paid",
+  },
+  mk: {
+    planNames: { 0: "Бесплатен", 1: "Стартер", 2: "Про" } as Record<number, string>,
+    accessDenied: "Пристап одбиен",
+    backToDashboard: "Назад кон Dashboard",
+    adminDashboard: "Admin Dashboard",
+    users: "Корисници",
+    paid: "Платени",
+    chatbots: "Chatbot-и",
+    messagesToday: "Пораки денес",
+    awaitingPayment: "Чекаат плаќање",
+    invoices: "Фактури",
+    // Users table
+    userCol: "Корисник",
+    plan: "План",
+    status: "Статус",
+    messagesCol: "Пораки",
+    chatbotsCol: "Chatbot-и",
+    registered: "Регистриран",
+    actions: "Акции",
+    // Trial status
+    active: "Активен",
+    expired: "Истечен",
+    days: "д",
+    // Invoices table
+    invoice: "Фактура",
+    client: "Клиент",
+    amount: "Износ",
+    date: "Датум",
+    taxId: "ЕДБ:",
+    yearly: "годишно",
+    monthly: "месечно",
+    noInvoices: "Нема фактури",
+    // Invoice statuses
+    statusPending: "Чека плаќање",
+    statusPaid: "Платена",
+    statusCancelled: "Откажана",
+    statusExpired: "Истечена",
+    markPaid: "Платена",
+  },
 };
 
 // ── Main Component ────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth();
+  const { lang } = useLanguage();
+  const c = t[lang];
   const navigate = useNavigate();
 
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -167,10 +246,10 @@ export default function AdminDashboard() {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <Shield className="w-12 h-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">Пристап одбиен</h2>
+            <h2 className="text-xl font-bold mb-2">{c.accessDenied}</h2>
             <p className="text-muted-foreground mb-4">{error}</p>
             <Link to="/dashboard">
-              <Button variant="outline">Назад кон Dashboard</Button>
+              <Button variant="outline">{c.backToDashboard}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -179,6 +258,7 @@ export default function AdminDashboard() {
   }
 
   const pendingInvoices = invoices.filter((i) => i.status === "pending");
+  const locale = lang === "mk" ? "mk-MK" : "en-US";
 
   return (
     <div className="min-h-screen bg-background">
@@ -192,25 +272,28 @@ export default function AdminDashboard() {
               Admin
             </span>
           </Link>
-          <Link to="/dashboard">
-            <Button variant="outline" size="sm">Dashboard</Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            <Link to="/dashboard">
+              <Button variant="outline" size="sm">Dashboard</Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
       <div className="container py-10">
-        <h1 className="font-display font-bold text-3xl text-foreground mb-8">Admin Dashboard</h1>
+        <h1 className="font-display font-bold text-3xl text-foreground mb-8">{c.adminDashboard}</h1>
 
         {/* Stats cards */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-            <StatCard icon={Users} label="Корисници" value={stats.totalTeams} />
-            <StatCard icon={CreditCard} label="Платени" value={stats.paidTeams} />
-            <StatCard icon={Bot} label="Chatbot-и" value={stats.totalChatbots} />
-            <StatCard icon={MessageSquare} label="Пораки денес" value={stats.messagesToday} />
+            <StatCard icon={Users} label={c.users} value={stats.totalTeams} />
+            <StatCard icon={CreditCard} label={c.paid} value={stats.paidTeams} />
+            <StatCard icon={Bot} label={c.chatbots} value={stats.totalChatbots} />
+            <StatCard icon={MessageSquare} label={c.messagesToday} value={stats.messagesToday} />
             <StatCard
               icon={Receipt}
-              label="Чекаат плаќање"
+              label={c.awaitingPayment}
               value={stats.pendingInvoices}
               highlight={stats.pendingInvoices > 0}
             />
@@ -226,7 +309,7 @@ export default function AdminDashboard() {
             className="gap-2"
           >
             <Users className="w-4 h-4" />
-            Корисници ({users.length})
+            {c.users} ({users.length})
           </Button>
           <Button
             variant={tab === "invoices" ? "default" : "outline"}
@@ -235,7 +318,7 @@ export default function AdminDashboard() {
             className="gap-2"
           >
             <Receipt className="w-4 h-4" />
-            Фактури
+            {c.invoices}
             {pendingInvoices.length > 0 && (
               <span className="bg-destructive text-white text-xs rounded-full px-1.5 py-0.5 ml-1">
                 {pendingInvoices.length}
@@ -254,12 +337,14 @@ export default function AdminDashboard() {
             actionLoading={actionLoading}
             onChangePlan={handleChangePlan}
             onExtendGrace={handleExtendGrace}
+            lang={lang}
           />
         ) : (
           <InvoicesTable
             invoices={invoices}
             actionLoading={actionLoading}
             onMarkPaid={handleMarkPaid}
+            lang={lang}
           />
         )}
       </div>
@@ -292,25 +377,29 @@ function StatCard({ icon: Icon, label, value, highlight }: {
 
 // ── Users Table ───────────────────────────────────────────────
 
-function UsersTable({ users, actionLoading, onChangePlan, onExtendGrace }: {
+function UsersTable({ users, actionLoading, onChangePlan, onExtendGrace, lang }: {
   users: AdminUser[];
   actionLoading: string | null;
   onChangePlan: (teamId: string, plan: number) => void;
   onExtendGrace: (teamId: string) => void;
+  lang: "en" | "mk";
 }) {
+  const c = t[lang];
+  const locale = lang === "mk" ? "mk-MK" : "en-US";
+
   return (
     <div className="rounded-xl border border-border overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-muted/50 text-left">
             <th className="px-4 py-3 font-medium text-muted-foreground">#</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Корисник</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">План</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Статус</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Пораки</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Chatbot-и</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Регистриран</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Акции</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.userCol}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.plan}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.status}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.messagesCol}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.chatbotsCol}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.registered}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.actions}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -325,11 +414,11 @@ function UsersTable({ users, actionLoading, onChangePlan, onExtendGrace }: {
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${planColors[u.plan] || planColors[0]}`}>
-                    {planNames[u.plan] || "Бесплатен"}
+                    {c.planNames[u.plan] || c.planNames[0]}
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <TrialStatus user={u} />
+                  <TrialStatus user={u} lang={lang} />
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2 min-w-[120px]">
@@ -343,7 +432,7 @@ function UsersTable({ users, actionLoading, onChangePlan, onExtendGrace }: {
                   {u.chatbotCount}/{u.chatbotLimit}
                 </td>
                 <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                  {new Date(u.createdAt).toLocaleDateString("mk-MK")}
+                  {new Date(u.createdAt).toLocaleDateString(locale)}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1">
@@ -351,6 +440,7 @@ function UsersTable({ users, actionLoading, onChangePlan, onExtendGrace }: {
                       currentPlan={u.plan}
                       loading={actionLoading === `plan-${u.teamId}`}
                       onChange={(plan) => onChangePlan(u.teamId, plan)}
+                      lang={lang}
                     />
                     {u.plan === 0 && (
                       <Button
@@ -365,7 +455,7 @@ function UsersTable({ users, actionLoading, onChangePlan, onExtendGrace }: {
                         ) : (
                           <Clock className="w-3 h-3" />
                         )}
-                        <span className="ml-1">+8д</span>
+                        <span className="ml-1">+8{c.days}</span>
                       </Button>
                     )}
                   </div>
@@ -381,9 +471,12 @@ function UsersTable({ users, actionLoading, onChangePlan, onExtendGrace }: {
 
 // ── Trial Status Badge ────────────────────────────────────────
 
-function TrialStatus({ user }: { user: AdminUser }) {
+function TrialStatus({ user, lang }: { user: AdminUser; lang: "en" | "mk" }) {
+  const c = t[lang];
+  const d = c.days;
+
   if (user.plan > 0) {
-    return <span className="text-xs text-green-600 font-medium">Активен</span>;
+    return <span className="text-xs text-green-600 font-medium">{c.active}</span>;
   }
 
   if (user.graceActive) {
@@ -393,7 +486,7 @@ function TrialStatus({ user }: { user: AdminUser }) {
     return (
       <span className="inline-flex items-center gap-1 text-xs text-yellow-600 font-medium">
         <Clock className="w-3 h-3" />
-        Grace ({daysLeft}д)
+        Grace ({daysLeft}{d})
       </span>
     );
   }
@@ -405,7 +498,7 @@ function TrialStatus({ user }: { user: AdminUser }) {
     return (
       <span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium">
         <Clock className="w-3 h-3" />
-        Trial ({daysLeft}д)
+        Trial ({daysLeft}{d})
       </span>
     );
   }
@@ -413,18 +506,20 @@ function TrialStatus({ user }: { user: AdminUser }) {
   return (
     <span className="inline-flex items-center gap-1 text-xs text-destructive font-medium">
       <AlertTriangle className="w-3 h-3" />
-      Истечен
+      {c.expired}
     </span>
   );
 }
 
 // ── Plan Dropdown ─────────────────────────────────────────────
 
-function PlanDropdown({ currentPlan, loading, onChange }: {
+function PlanDropdown({ currentPlan, loading, onChange, lang }: {
   currentPlan: number;
   loading: boolean;
   onChange: (plan: number) => void;
+  lang: "en" | "mk";
 }) {
+  const c = t[lang];
   const [open, setOpen] = useState(false);
 
   return (
@@ -437,7 +532,7 @@ function PlanDropdown({ currentPlan, loading, onChange }: {
         disabled={loading}
       >
         {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ChevronDown className="w-3 h-3" />}
-        План
+        {c.plan}
       </Button>
       {open && (
         <>
@@ -455,7 +550,7 @@ function PlanDropdown({ currentPlan, loading, onChange }: {
                 }}
               >
                 {plan === currentPlan && <CheckCircle2 className="w-3 h-3 text-primary" />}
-                <span className={plan !== currentPlan ? "ml-5" : ""}>{planNames[plan]}</span>
+                <span className={plan !== currentPlan ? "ml-5" : ""}>{c.planNames[plan]}</span>
               </button>
             ))}
           </div>
@@ -467,11 +562,15 @@ function PlanDropdown({ currentPlan, loading, onChange }: {
 
 // ── Invoices Table ────────────────────────────────────────────
 
-function InvoicesTable({ invoices, actionLoading, onMarkPaid }: {
+function InvoicesTable({ invoices, actionLoading, onMarkPaid, lang }: {
   invoices: AdminInvoice[];
   actionLoading: string | null;
   onMarkPaid: (invoiceId: string) => void;
+  lang: "en" | "mk";
 }) {
+  const c = t[lang];
+  const locale = lang === "mk" ? "mk-MK" : "en-US";
+
   const statusColors: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-700",
     paid: "bg-green-100 text-green-700",
@@ -480,10 +579,10 @@ function InvoicesTable({ invoices, actionLoading, onMarkPaid }: {
   };
 
   const statusLabels: Record<string, string> = {
-    pending: "Чека плаќање",
-    paid: "Платена",
-    cancelled: "Откажана",
-    expired: "Истечена",
+    pending: c.statusPending,
+    paid: c.statusPaid,
+    cancelled: c.statusCancelled,
+    expired: c.statusExpired,
   };
 
   return (
@@ -491,13 +590,13 @@ function InvoicesTable({ invoices, actionLoading, onMarkPaid }: {
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-muted/50 text-left">
-            <th className="px-4 py-3 font-medium text-muted-foreground">Фактура</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Клиент</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">План</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Износ</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Статус</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Датум</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground">Акции</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.invoice}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.client}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.plan}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.amount}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.status}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.date}</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">{c.actions}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -510,11 +609,11 @@ function InvoicesTable({ invoices, actionLoading, onMarkPaid }: {
               <td className="px-4 py-3">
                 <div className="font-medium">{inv.companyName}</div>
                 <div className="text-xs text-muted-foreground">{inv.userEmail}</div>
-                <div className="text-xs text-muted-foreground">ЕДБ: {inv.edb}</div>
+                <div className="text-xs text-muted-foreground">{c.taxId} {inv.edb}</div>
               </td>
               <td className="px-4 py-3">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${planColors[inv.plan] || planColors[0]}`}>
-                  {planNames[inv.plan]} · {inv.period === "annual" ? "годишно" : "месечно"}
+                  {c.planNames[inv.plan]} · {inv.period === "annual" ? c.yearly : c.monthly}
                 </span>
               </td>
               <td className="px-4 py-3 font-medium">
@@ -526,7 +625,7 @@ function InvoicesTable({ invoices, actionLoading, onMarkPaid }: {
                 </span>
               </td>
               <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                {new Date(inv.createdAt).toLocaleDateString("mk-MK")}
+                {new Date(inv.createdAt).toLocaleDateString(locale)}
               </td>
               <td className="px-4 py-3">
                 {inv.status === "pending" && (
@@ -541,7 +640,7 @@ function InvoicesTable({ invoices, actionLoading, onMarkPaid }: {
                     ) : (
                       <CheckCircle2 className="w-3 h-3" />
                     )}
-                    Платена
+                    {c.markPaid}
                   </Button>
                 )}
               </td>
@@ -550,7 +649,7 @@ function InvoicesTable({ invoices, actionLoading, onMarkPaid }: {
           {invoices.length === 0 && (
             <tr>
               <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                Нема фактури
+                {c.noInvoices}
               </td>
             </tr>
           )}

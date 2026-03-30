@@ -8,7 +8,7 @@ const en = {
   sections: [
     {
       heading: "1. Service Description",
-      body: "NexaAI is a software-as-a-service (SaaS) platform that allows businesses to create, train, and deploy AI-powered chatbots. These chatbots can be integrated into websites and connected to Facebook Pages to automatically respond to customer messages via Messenger.",
+      body: "NexaAI is a software-as-a-service (SaaS) platform operated by **THY BUSINESS GUIDE DOOEL Skopje**, Bul. Partizanski odred no. 102/2-14, Skopje, Republic of North Macedonia. The platform allows businesses to create, train, and deploy AI-powered chatbots. These chatbots can be integrated into websites and connected to Facebook Pages to automatically respond to customer messages via Messenger.",
     },
     {
       heading: "2. Account Registration",
@@ -82,6 +82,9 @@ const en = {
       heading: "11. Contact",
       body: `For questions about these Terms of Service:
 
+• **Company**: THY BUSINESS GUIDE DOOEL Skopje
+• **Address**: Bul. Partizanski odred no. 102/2-14, Skopje, Republic of North Macedonia
+• **Data Protection Officer**: Martin Boshkoski
 • **Email**: info@nexa.mk`,
     },
   ],
@@ -93,7 +96,7 @@ const mk = {
   sections: [
     {
       heading: "1. Опис на услугата",
-      body: "NexaAI е софтверска платформа (SaaS) која им овозможува на бизнисите да креираат, тренираат и поставуваат AI chatbot-и. Овие chatbot-и може да се интегрираат на веб-страници и да се поврзат со Facebook страници за автоматско одговарање на пораки преку Messenger.",
+      body: "NexaAI е софтверска платформа (SaaS) управувана од **Друштво за услуги ТХУ БУЗИНЕСС ГУИДЕ ДООЕЛ Скопје**, Бул. Партизански одреди бр. 102/2-14, Скопје, Република Северна Македонија. Платформата им овозможува на бизнисите да креираат, тренираат и поставуваат AI chatbot-и. Овие chatbot-и може да се интегрираат на веб-страници и да се поврзат со Facebook страници за автоматско одговарање на пораки преку Messenger.",
     },
     {
       heading: "2. Регистрација на сметка",
@@ -162,6 +165,9 @@ const mk = {
       heading: "11. Контакт",
       body: `За прашања за овие Услови за користење:
 
+• **Фирма**: Друштво за услуги ТХУ БУЗИНЕСС ГУИДЕ ДООЕЛ Скопје
+• **Адреса**: Бул. Партизански одреди бр. 102/2-14, Скопје, Република Северна Македонија
+• **Офицер за заштита на лични податоци**: Мартин Бошкоски
 • **Email**: info@nexa.mk`,
     },
   ],
