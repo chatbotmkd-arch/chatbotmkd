@@ -29,6 +29,8 @@ const en = {
 • To generate analytics about chatbot performance
 • To improve our service and provide customer support
 
+**Automated AI Responses**: We process user messages to generate automated responses using AI systems. When a customer sends a message to your connected Facebook Page, Instagram account, or website widget, that message is sent to our AI language model to produce a relevant reply. Messages are processed in real time and are not used to train AI models.
+
 We do NOT use your data for advertising, profiling, or any purpose unrelated to providing our chatbot service.`,
     },
     {
@@ -36,6 +38,7 @@ We do NOT use your data for advertising, profiling, or any purpose unrelated to 
       body: `When you connect your Facebook Page to NexaAI:
 
 • We only access incoming messages sent by customers to your Page
+• We process these messages using AI systems to generate automated replies on your behalf
 • We respond to these messages through the Messenger API on your behalf
 • We never send unsolicited messages to any Facebook users
 • We never access your personal Facebook profile or friends list
@@ -115,6 +118,8 @@ const mk = {
 • За генерирање аналитика
 • За подобрување на нашата услуга
 
+**Автоматски AI одговори**: Ги обработуваме пораките од корисниците за генерирање автоматски одговори со помош на AI системи. Кога клиент ќе испрати порака на вашата поврзана Facebook страница, Instagram профил или веб widget, таа порака се испраќа до нашиот AI јазичен модел за генерирање релевантен одговор. Пораките се обработуваат во реално време и не се користат за тренирање на AI модели.
+
 НЕ ги користиме вашите податоци за рекламирање или профилирање.`,
     },
     {
@@ -122,6 +127,7 @@ const mk = {
       body: `Кога ја поврзувате вашата Facebook страница со NexaAI:
 
 • Пристапуваме само до дојдовни пораки испратени од клиенти
+• Ги обработуваме овие пораки со помош на AI системи за генерирање автоматски одговори во ваше име
 • Одговараме на овие пораки преку Messenger API во ваше име
 • Никогаш не испраќаме несакани пораки
 • Никогаш не пристапуваме до вашиот личен Facebook профил
