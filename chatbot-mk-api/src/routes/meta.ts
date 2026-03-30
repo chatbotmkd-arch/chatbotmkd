@@ -16,6 +16,10 @@ const router = Router();
 router.get("/webhook/meta", verifyWebhook);
 router.post("/webhook/meta", handleWebhook as any);
 
+// Alias at /api/facebook/webhook for Meta App Review callback URL
+router.get("/api/facebook/webhook", verifyWebhook);
+router.post("/api/facebook/webhook", handleWebhook as any);
+
 // --- OAuth endpoints ---
 // Initiate OAuth — requires auth (customer must be logged in)
 router.get("/api/auth/facebook/connect", authenticate, asyncHandler(initiateOAuth as any));

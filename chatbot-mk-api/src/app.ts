@@ -63,8 +63,11 @@ app.use(express.urlencoded({ extended: true }));
 // Sanitize MongoDB query operators from request body/query
 app.use(sanitizeMongoQuery);
 
-// Rate limiting
-app.use("/api/", apiLimiter);
+// Rate limiting (exempt webhook endpoints — Meta needs unrestricted access)
+app.use("/api/", (req, res, next) => {
+  if (req.path.startsWith("/facebook/webhook")) return next();
+  return apiLimiter(req, res, next);
+});
 
 // Health check
 app.get("/api/health", (_req, res) => {

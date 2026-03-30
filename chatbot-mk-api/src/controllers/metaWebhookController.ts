@@ -20,7 +20,8 @@ export function verifyWebhook(req: Request, res: Response): void {
   const challenge = req.query["hub.challenge"];
 
   if (mode === "subscribe" && token === env.metaWebhookVerifyToken) {
-    res.status(200).send(challenge);
+    // Meta expects the challenge echoed back as plain text
+    res.set("Content-Type", "text/plain").status(200).send(String(challenge));
   } else {
     res.sendStatus(403);
   }
