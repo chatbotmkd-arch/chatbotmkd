@@ -3,22 +3,26 @@ import { useLanguage } from "@/lib/language";
 
 const faqs = {
   en: [
-    { q: "How does the Facebook Messenger integration work?", a: "After creating your chatbot, you connect your Facebook Page with one click. When a customer sends a message to your Page, ChatbotMKD receives it via the Messenger API and responds automatically with answers based on your business data. The chatbot only responds to incoming messages — it never sends unsolicited messages." },
-    { q: "What Facebook permissions does ChatbotMKD need?", a: "ChatbotMKD requests the pages_messaging permission, which allows it to read and respond to incoming Messenger conversations on your connected Facebook Page. This is the only permission needed and is used solely to deliver chatbot replies." },
+    { q: "Which channels does NexaAI support?", a: "NexaAI works on three channels: Facebook Messenger, Instagram DMs, and your website via an embeddable chat widget. One chatbot serves all three — train once, deploy everywhere." },
+    { q: "How does the Facebook & Instagram integration work?", a: "After creating your chatbot, you connect your Facebook Page and Instagram account with one click. When a customer sends a message on Messenger or Instagram DMs, NexaAI receives it and responds automatically with answers based on your business data. The chatbot only responds to incoming messages — it never sends unsolicited messages." },
+    { q: "How do I add the chatbot to my website?", a: "Just copy a small embed snippet from your dashboard and paste it into your website's HTML. The chat widget appears in the corner of your site, ready to answer customer questions instantly." },
+    { q: "What permissions does NexaAI need?", a: "NexaAI requests pages_messaging and instagram_manage_messages permissions, which allow it to read and respond to incoming conversations on your connected Facebook Page and Instagram account. These are used solely to deliver chatbot replies." },
     { q: "Is my business data safe?", a: "Yes. All data is encrypted with AES-256 at rest and TLS 1.3 in transit. We are fully GDPR compliant. Your data is never sold or shared with third parties and is used only to power your chatbot." },
-    { q: "Can I disconnect my Facebook Page at any time?", a: "Absolutely. You have full control over the connection. You can disconnect your Facebook Page from ChatbotMKD at any time from your dashboard, and the chatbot will immediately stop responding to messages." },
-    { q: "How long does setup take?", a: "Most users are up and running in under 10 minutes. You answer a few questions about your business, upload your data (FAQs, documents, or a website URL), and connect your Facebook Page." },
+    { q: "Can I disconnect my channels at any time?", a: "Absolutely. You have full control. You can disconnect your Facebook Page, Instagram account, or remove the website widget at any time from your dashboard, and the chatbot will immediately stop responding on that channel." },
+    { q: "How long does setup take?", a: "Most users are up and running in under 10 minutes. You answer a few questions about your business, upload your data (FAQs, documents, or a website URL), and connect your channels." },
     { q: "What happens when the chatbot can't answer a question?", a: "You can configure the chatbot to either acknowledge that it doesn't know the answer, provide your contact information for follow-up, or attempt to help with the closest available information. You define the rules." },
-    { q: "Does the chatbot support Macedonian?", a: "Yes! ChatbotMKD is built for the Macedonian market and supports Macedonian, English, Albanian, and many other languages natively." },
+    { q: "Does the chatbot support Macedonian?", a: "Yes! NexaAI is built for the Macedonian market and supports Macedonian, English, Albanian, and many other languages natively." },
   ],
   mk: [
-    { q: "Како функционира Facebook Messenger интеграцијата?", a: "Откако ќе го креирате вашиот chatbot, го поврзувате со вашата Facebook страница со еден клик. Кога клиент ќе испрати порака, ChatbotMKD ја прима преку Messenger API и автоматски одговара со одговори базирани на вашите податоци. Chatbot-от одговара само на дојдовни пораки — никогаш не испраќа несакани пораки." },
-    { q: "Какви Facebook дозволи бара ChatbotMKD?", a: "ChatbotMKD бара дозвола pages_messaging, која овозможува читање и одговарање на дојдовни Messenger разговори на вашата поврзана Facebook страница. Тоа е единствената потребна дозвола." },
+    { q: "Кои канали ги поддржува NexaAI?", a: "NexaAI работи на три канали: Facebook Messenger, Instagram DMs и вашата веб-страна преку chat widget. Еден chatbot ги опслужува сите три — тренирајте еднаш, поврзете насекаде." },
+    { q: "Како функционира Facebook и Instagram интеграцијата?", a: "Откако ќе го креирате вашиот chatbot, ги поврзувате вашата Facebook страница и Instagram профил со еден клик. Кога клиент испрати порака на Messenger или Instagram DM, NexaAI ја прима и автоматски одговара со одговори базирани на вашите податоци. Chatbot-от одговара само на дојдовни пораки — никогаш не испраќа несакани пораки." },
+    { q: "Како да го додадам chatbot-от на мојата веб-страна?", a: "Копирајте мал код од вашиот dashboard и залепете го во HTML на вашата веб-страна. Chat widget-от се појавува во аголот на сајтот, подготвен да одговара на прашања." },
+    { q: "Какви дозволи бара NexaAI?", a: "NexaAI бара pages_messaging и instagram_manage_messages дозволи, кои овозможуваат читање и одговарање на дојдовни разговори на вашата Facebook страница и Instagram профил. Овие се користат исклучиво за chatbot одговори." },
     { q: "Дали моите податоци се безбедни?", a: "Да. Сите податоци се енкриптирани со AES-256 и TLS 1.3. Целосно сме усогласени со GDPR. Вашите податоци никогаш не се продаваат или споделуваат со трети страни." },
-    { q: "Може ли да ја исклучам мојата Facebook страница во секое време?", a: "Апсолутно. Имате целосна контрола. Можете да ја исклучите вашата Facebook страница од ChatbotMKD во секое време од вашиот dashboard." },
-    { q: "Колку време трае поставувањето?", a: "Повеќето корисници се подготвени за помалку од 10 минути. Одговарате на неколку прашања, поставувате податоци и ја поврзувате вашата Facebook страница." },
+    { q: "Може ли да ги исклучам каналите во секое време?", a: "Апсолутно. Имате целосна контрола. Можете да ги исклучите Facebook страницата, Instagram профилот или да го отстраните widget-от од веб-страната во секое време од вашиот dashboard." },
+    { q: "Колку време трае поставувањето?", a: "Повеќето корисници се подготвени за помалку од 10 минути. Одговарате на неколку прашања, поставувате податоци и ги поврзувате вашите канали." },
     { q: "Што се случува кога chatbot-от не знае одговор?", a: "Можете да го конфигурирате да признае дека не знае, да даде контакт информации или да се обиде да помогне со најблиските информации. Вие ги дефинирате правилата." },
-    { q: "Дали chatbot-от поддржува македонски јазик?", a: "Да! ChatbotMKD е направен за македонскиот пазар и поддржува македонски, англиски, албански и многу други јазици." },
+    { q: "Дали chatbot-от поддржува македонски јазик?", a: "Да! NexaAI е направен за македонскиот пазар и поддржува македонски, англиски, албански и многу други јазици." },
   ],
 };
 

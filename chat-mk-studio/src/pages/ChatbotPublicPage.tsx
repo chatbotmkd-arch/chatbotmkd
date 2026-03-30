@@ -281,12 +281,12 @@ const ChatbotPublicPage = () => {
           <p className="text-[11px] text-gray-400 text-center">
             Powered by{" "}
             <a
-              href="https://chatbotmkd.mk"
+              href="https://nexa.mk"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-gray-500 hover:text-gray-700 transition-colors"
             >
-              ChatBot MK
+              NexaAI
             </a>
           </p>
         </div>

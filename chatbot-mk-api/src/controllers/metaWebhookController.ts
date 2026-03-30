@@ -48,9 +48,13 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
   // Always respond 200 immediately — Meta retries on timeout
   res.sendStatus(200);
 
-  // Verify signature
+  // Verify signature — always require it when META_APP_SECRET is configured
   const signature = req.headers["x-hub-signature-256"] as string | undefined;
-  if (env.metaAppSecret && !verifySignature((req as any).rawBody, signature)) {
+  if (!env.metaAppSecret) {
+    console.error("META_APP_SECRET not configured — rejecting webhook payload");
+    return;
+  }
+  if (!verifySignature((req as any).rawBody, signature)) {
     console.error("Meta webhook signature verification failed");
     return;
   }

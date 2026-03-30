@@ -8,7 +8,7 @@ const en = {
   sections: [
     {
       heading: "1. Introduction",
-      body: "ChatbotMKD (\"we\", \"our\", \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our chatbot platform and services.",
+      body: "NexaAI (\"we\", \"our\", \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our chatbot platform and services.",
     },
     {
       heading: "2. Information We Collect",
@@ -33,7 +33,7 @@ We do NOT use your data for advertising, profiling, or any purpose unrelated to 
     },
     {
       heading: "4. Facebook Data Usage",
-      body: `When you connect your Facebook Page to ChatbotMKD:
+      body: `When you connect your Facebook Page to NexaAI:
 
 • We only access incoming messages sent by customers to your Page
 • We respond to these messages through the Messenger API on your behalf
@@ -54,7 +54,7 @@ We do NOT use your data for advertising, profiling, or any purpose unrelated to 
       body: `• Your data is retained for as long as your account is active
 • You can delete your chatbot data at any time from your dashboard
 • Upon account deletion, all associated data is permanently removed within 30 days
-• You can request deletion of your data by contacting us at contact@chatbotmkd.mk`,
+• You can request deletion of your data by contacting us at info@nexa.mk`,
     },
     {
       heading: "7. Third-Party Services",
@@ -77,13 +77,13 @@ We do not sell or share your data with any other third parties.`,
 • **Restriction**: Restrict processing of your data
 • **Objection**: Object to processing of your data
 
-To exercise any of these rights, contact us at contact@chatbotmkd.mk.`,
+To exercise any of these rights, contact us at info@nexa.mk.`,
     },
     {
       heading: "9. Contact Information",
       body: `If you have any questions about this Privacy Policy, please contact us:
 
-• **Email**: contact@chatbotmkd.mk`,
+• **Email**: info@nexa.mk`,
     },
   ],
 };
@@ -94,7 +94,7 @@ const mk = {
   sections: [
     {
       heading: "1. Вовед",
-      body: "ChatbotMKD (\"ние\", \"нашиот\") е посветен на заштитата на вашата приватност. Оваа Политика на приватност објаснува како ги собираме, користиме и штитиме вашите информации.",
+      body: "NexaAI (\"ние\", \"нашиот\") е посветен на заштитата на вашата приватност. Оваа Политика на приватност објаснува како ги собираме, користиме и штитиме вашите информации.",
     },
     {
       heading: "2. Информации кои ги собираме",
@@ -119,7 +119,7 @@ const mk = {
     },
     {
       heading: "4. Користење на Facebook податоци",
-      body: `Кога ја поврзувате вашата Facebook страница со ChatbotMKD:
+      body: `Кога ја поврзувате вашата Facebook страница со NexaAI:
 
 • Пристапуваме само до дојдовни пораки испратени од клиенти
 • Одговараме на овие пораки преку Messenger API во ваше име
@@ -139,7 +139,7 @@ const mk = {
       body: `• Вашите податоци се задржуваат додека вашата сметка е активна
 • Можете да ги избришете вашите chatbot податоци во секое време
 • По бришење на сметката, сите податоци се трајно отстранети во рок од 30 дена
-• Контактирајте не на contact@chatbotmkd.mk за бришење на податоци`,
+• Контактирајте не на info@nexa.mk за бришење на податоци`,
     },
     {
       heading: "7. Трети страни",
@@ -161,13 +161,13 @@ const mk = {
 • **Преносливост**: Примете ги вашите податоци во преносен формат
 • **Ограничување**: Ограничете ја обработката на вашите податоци
 
-Контактирајте не на contact@chatbotmkd.mk за остварување на овие права.`,
+Контактирајте не на info@nexa.mk за остварување на овие права.`,
     },
     {
       heading: "9. Контакт информации",
       body: `Доколку имате прашања за оваа Политика на приватност:
 
-• **Email**: contact@chatbotmkd.mk`,
+• **Email**: info@nexa.mk`,
     },
   ],
 };

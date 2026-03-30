@@ -1,19 +1,13 @@
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { env } from "../config/env";
 import { AuthPayload, TokenPair } from "../types";
 
 export function generateTokens(payload: AuthPayload): TokenPair {
-  const accessToken = jwt.sign(
-    { ...payload },
-    env.jwtSecret,
-    { algorithm: "HS256", expiresIn: 900 } // 15 minutes
-  );
+  const accessOpts: SignOptions = { algorithm: "HS256", expiresIn: env.jwtExpiresIn as any };
+  const refreshOpts: SignOptions = { algorithm: "HS256", expiresIn: env.jwtRefreshExpiresIn as any };
 
-  const refreshToken = jwt.sign(
-    { ...payload },
-    env.jwtRefreshSecret,
-    { algorithm: "HS256", expiresIn: 604800 } // 7 days
-  );
+  const accessToken = jwt.sign({ ...payload }, env.jwtSecret, accessOpts);
+  const refreshToken = jwt.sign({ ...payload }, env.jwtRefreshSecret, refreshOpts);
 
   return { accessToken, refreshToken };
 }

@@ -8,7 +8,7 @@ const en = {
   sections: [
     {
       heading: "1. Service Description",
-      body: "ChatbotMKD is a software-as-a-service (SaaS) platform that allows businesses to create, train, and deploy AI-powered chatbots. These chatbots can be integrated into websites and connected to Facebook Pages to automatically respond to customer messages via Messenger.",
+      body: "NexaAI is a software-as-a-service (SaaS) platform that allows businesses to create, train, and deploy AI-powered chatbots. These chatbots can be integrated into websites and connected to Facebook Pages to automatically respond to customer messages via Messenger.",
     },
     {
       heading: "2. Account Registration",
@@ -21,7 +21,7 @@ const en = {
     },
     {
       heading: "3. Acceptable Use",
-      body: `You agree to use ChatbotMKD only for lawful purposes. You may NOT:
+      body: `You agree to use NexaAI only for lawful purposes. You may NOT:
 
 • Use the chatbot to send spam or unsolicited messages
 • Create chatbots that impersonate individuals or organizations
@@ -32,20 +32,20 @@ const en = {
     },
     {
       heading: "4. Facebook Integration",
-      body: `When connecting your Facebook Page to ChatbotMKD:
+      body: `When connecting your Facebook Page to NexaAI:
 
 • You must be an administrator of the Facebook Page you connect
 • You are responsible for ensuring your chatbot complies with Meta's Platform Policies
 • The chatbot will only respond to messages initiated by users on your Page
 • You can disconnect your Page at any time from your dashboard
-• ChatbotMKD is not affiliated with or endorsed by Meta/Facebook`,
+• NexaAI is not affiliated with or endorsed by Meta/Facebook`,
     },
     {
       heading: "5. Data and Content",
       body: `• You retain ownership of all data and content you upload to train your chatbot
-• You grant ChatbotMKD a limited license to use your content solely to provide the chatbot service
+• You grant NexaAI a limited license to use your content solely to provide the chatbot service
 • You are responsible for ensuring you have the right to use any content you upload
-• ChatbotMKD does not claim ownership of your content`,
+• NexaAI does not claim ownership of your content`,
     },
     {
       heading: "6. Service Availability",
@@ -62,7 +62,7 @@ const en = {
     },
     {
       heading: "8. Limitation of Liability",
-      body: `• ChatbotMKD is provided "as is" without warranties of any kind
+      body: `• NexaAI is provided "as is" without warranties of any kind
 • We are not liable for any indirect, incidental, or consequential damages
 • Our total liability is limited to the amount you paid for the service in the last 12 months
 • We are not responsible for the accuracy of AI-generated chatbot responses`,
@@ -82,7 +82,7 @@ const en = {
       heading: "11. Contact",
       body: `For questions about these Terms of Service:
 
-• **Email**: contact@chatbotmkd.mk`,
+• **Email**: info@nexa.mk`,
     },
   ],
 };
@@ -93,7 +93,7 @@ const mk = {
   sections: [
     {
       heading: "1. Опис на услугата",
-      body: "ChatbotMKD е софтверска платформа (SaaS) која им овозможува на бизнисите да креираат, тренираат и поставуваат AI chatbot-и. Овие chatbot-и може да се интегрираат на веб-страници и да се поврзат со Facebook страници за автоматско одговарање на пораки преку Messenger.",
+      body: "NexaAI е софтверска платформа (SaaS) која им овозможува на бизнисите да креираат, тренираат и поставуваат AI chatbot-и. Овие chatbot-и може да се интегрираат на веб-страници и да се поврзат со Facebook страници за автоматско одговарање на пораки преку Messenger.",
     },
     {
       heading: "2. Регистрација на сметка",
@@ -106,7 +106,7 @@ const mk = {
     },
     {
       heading: "3. Прифатлива употреба",
-      body: `Се согласувате да го користите ChatbotMKD само за законски цели. НЕ смеете:
+      body: `Се согласувате да го користите NexaAI само за законски цели. НЕ смеете:
 
 • Да го користите chatbot-от за испраќање спам
 • Да креирате chatbot-и кои се претставуваат како други лица
@@ -122,12 +122,12 @@ const mk = {
 • Одговорни сте за усогласеност со политиките на Meta
 • Chatbot-от одговара само на пораки иницирани од корисници
 • Можете да ја исклучите вашата страница во секое време
-• ChatbotMKD не е поврзан со Meta/Facebook`,
+• NexaAI не е поврзан со Meta/Facebook`,
     },
     {
       heading: "5. Податоци и содржина",
       body: `• Вие го задржувате сопственоста над сите податоци кои ги поставувате
-• На ChatbotMKD му давате лиценца за користење на содржината само за chatbot услугата
+• На NexaAI му давате лиценца за користење на содржината само за chatbot услугата
 • Одговорни сте дека имате право да ја користите содржината која ја поставувате`,
     },
     {
@@ -144,7 +144,7 @@ const mk = {
     },
     {
       heading: "8. Ограничување на одговорност",
-      body: `• ChatbotMKD е обезбеден \"како што е\" без гаранции
+      body: `• NexaAI е обезбеден \"како што е\" без гаранции
 • Не сме одговорни за индиректни или последични штети
 • Нашата вкупна одговорност е ограничена на износот кој го плативте во последните 12 месеци`,
     },
@@ -162,7 +162,7 @@ const mk = {
       heading: "11. Контакт",
       body: `За прашања за овие Услови за користење:
 
-• **Email**: contact@chatbotmkd.mk`,
+• **Email**: info@nexa.mk`,
     },
   ],
 };

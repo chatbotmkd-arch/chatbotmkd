@@ -43,7 +43,7 @@ const t = {
   en: {
     label: "Live Demo",
     title: "See it in action",
-    subtitle: "Click a question below to see how the chatbot responds to customer messages on your Facebook Page.",
+    subtitle: "Click a question below to see how the chatbot responds to customer messages on Facebook, Instagram, or your website.",
     widgetTitle: "Coffee Shop MK",
     widgetSub: "Typically replies instantly",
     typing: "Typing...",
@@ -52,7 +52,7 @@ const t = {
   mk: {
     label: "Демо",
     title: "Видете го во акција",
-    subtitle: "Кликнете на прашање подолу за да видите како chatbot-от одговара на пораки од клиенти на вашата Facebook страница.",
+    subtitle: "Кликнете на прашање подолу за да видите како chatbot-от одговара на пораки од клиенти на Facebook, Instagram или вашата веб-страна.",
     widgetTitle: "Coffee Shop MK",
     widgetSub: "Обично одговара инстантно",
     typing: "Пишува...",

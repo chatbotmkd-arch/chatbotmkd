@@ -5,22 +5,22 @@ import { useLanguage } from "@/lib/language";
 const t = {
   en: {
     label: "How It Works",
-    title: "3 Steps to Your Facebook Chatbot",
+    title: "3 Steps to Your AI Chatbot",
     subtitle: "No coding required. No technical skills needed.",
     steps: [
       { num: "01", icon: Bot, title: "Create your chatbot", desc: "Answer a few questions about your business. Upload your FAQs, documents, or website URL." },
       { num: "02", icon: Database, title: "Train with your content", desc: "The AI learns from your data and becomes an expert on your business, products, and services." },
-      { num: "03", icon: Share2, title: "Connect your Facebook Page", desc: "Link your Facebook Page in one click. The chatbot automatically replies to Messenger messages." },
+      { num: "03", icon: Share2, title: "Connect your channels", desc: "Link your Facebook Page, Instagram account, or embed a chat widget on your website — all in one click." },
     ],
   },
   mk: {
     label: "Како работи",
-    title: "3 чекори до вашиот Facebook Chatbot",
+    title: "3 чекори до вашиот AI Chatbot",
     subtitle: "Без кодирање. Без техничко знаење.",
     steps: [
       { num: "01", icon: Bot, title: "Креирајте го вашиот chatbot", desc: "Одговорете на неколку прашања за вашиот бизнис. Поставете FAQ, документи или веб-страна." },
       { num: "02", icon: Database, title: "Тренирајте со вашите податоци", desc: "AI учи од вашите информации и станува експерт за вашиот бизнис, производи и услуги." },
-      { num: "03", icon: Share2, title: "Поврзете ја вашата Facebook страница", desc: "Поврзете ја вашата страница со еден клик. Chatbot-от автоматски одговара на Messenger пораки." },
+      { num: "03", icon: Share2, title: "Поврзете ги вашите канали", desc: "Поврзете Facebook страница, Instagram профил или додајте chat widget на вашата веб-страна — сè со еден клик." },
     ],
   },
 };

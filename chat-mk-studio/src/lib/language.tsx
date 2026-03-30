@@ -14,13 +14,13 @@ const LanguageContext = createContext<LanguageContextType>({
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
-    const stored = localStorage.getItem("chatbotmkd-lang");
+    const stored = localStorage.getItem("nexaai-lang");
     return stored === "mk" ? "mk" : "en";
   });
 
   const setLang = (l: Lang) => {
     setLangState(l);
-    localStorage.setItem("chatbotmkd-lang", l);
+    localStorage.setItem("nexaai-lang", l);
   };
 
   return (

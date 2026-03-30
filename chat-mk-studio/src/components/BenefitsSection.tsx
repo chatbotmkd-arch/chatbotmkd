@@ -36,7 +36,7 @@ const BenefitsSection = () => {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <p className="text-sm font-semibold text-primary tracking-wide uppercase mb-3">Придобивки</p>
           <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground">
-            Зошто ChatBot MK?
+            Зошто NexaAI?
           </h2>
           <p className="mt-4 text-muted-foreground text-lg">
             Повеќе од обичен chatbot — интелигентен AI агент за вашиот бизнис.

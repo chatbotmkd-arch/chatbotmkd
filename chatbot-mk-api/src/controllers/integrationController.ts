@@ -57,6 +57,30 @@ export async function createWebhook(req: AuthRequest, res: Response): Promise<vo
   const { url, events } = req.body;
   if (!url || !events?.length) throw new AppError(400, "URL and events are required");
 
+  // Validate webhook URL
+  try {
+    const parsed = new URL(url);
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      throw new AppError(400, "Webhook URL must use http or https");
+    }
+    const hostname = parsed.hostname.toLowerCase();
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1" ||
+      hostname.startsWith("10.") ||
+      hostname.startsWith("192.168.") ||
+      /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname) ||
+      hostname === "169.254.169.254" ||
+      hostname.endsWith(".internal")
+    ) {
+      throw new AppError(400, "Webhook URL must not point to a private or internal address");
+    }
+  } catch (e) {
+    if (e instanceof AppError) throw e;
+    throw new AppError(400, "Invalid webhook URL");
+  }
+
   const secret = crypto.randomBytes(32).toString("hex");
 
   const webhook = await Webhook.create({

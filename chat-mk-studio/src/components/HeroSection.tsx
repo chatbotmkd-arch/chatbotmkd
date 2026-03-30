@@ -13,19 +13,19 @@ const chatMessages = [
 
 const t = {
   en: {
-    h1a: "Create a chatbot for your",
-    h1b: "Facebook Page",
+    h1a: "AI chatbot for your",
+    h1b: "Facebook, Instagram & Website",
     h1c: "in 10 minutes",
-    sub: "Train your chatbot with your business data and automatically reply to customer messages on Messenger — 24/7, in any language.",
+    sub: "Train your chatbot with your business data and automatically reply to customer messages on Messenger, Instagram DMs, and your website — 24/7, in any language.",
     cta: "Get Started",
     note: "No credit card required. Ready in minutes.",
     widgetTitle: "Your Business Page",
   },
   mk: {
-    h1a: "Креирајте chatbot за вашата",
-    h1b: "Facebook страница",
+    h1a: "AI chatbot за вашиот",
+    h1b: "Facebook, Instagram и веб-сајт",
     h1c: "за 10 минути",
-    sub: "Тренирајте го вашиот chatbot со податоци за вашиот бизнис и автоматски одговарајте на пораки на Messenger — 24/7, на било кој јазик.",
+    sub: "Тренирајте го вашиот chatbot со податоци за вашиот бизнис и автоматски одговарајте на пораки на Messenger, Instagram DM и вашата веб-страна — 24/7, на било кој јазик.",
     cta: "Започни бесплатно",
     note: "Без кредитна картичка. Готов за неколку минути.",
     widgetTitle: "Вашата бизнис страница",

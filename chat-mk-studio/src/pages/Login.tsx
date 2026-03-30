@@ -36,7 +36,7 @@ const Login = () => {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 font-display font-bold text-2xl text-foreground">
             <Bot className="w-8 h-8 text-primary" />
-            ChatBot MK
+            NexaAI
           </Link>
         </div>
 

@@ -29,10 +29,10 @@ async function send(to: string, subject: string, html: string) {
 // ── Templates ─────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(to: string, name: string) {
-  await send(to, "Добредојдовте во ChatBot MK!", `
+  await send(to, "Добредојдовте во NexaAI!", `
     <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
       <h2 style="color: #8b5cf6;">Добредојдовте, ${name}!</h2>
-      <p>Ви благодариме што се регистриравте на <strong>ChatBot MK</strong>.</p>
+      <p>Ви благодариме што се регистриравте на <strong>NexaAI</strong>.</p>
       <p>Имате <strong>8 дена бесплатен пробен период</strong> и <strong>30 бесплатни пораки</strong> за да го тестирате вашиот AI chatbot.</p>
       <h3>Следни чекори:</h3>
       <ol>
@@ -67,7 +67,7 @@ export async function sendInvoiceEmail(
   const planName = PLAN_LIMITS[invoice.plan as PlanType]?.name || "Стартер";
   const periodLabel = invoice.period === "annual" ? "годишно" : "месечно";
 
-  await send(to, `Про-фактура ${invoice.invoiceNumber} — ChatBot MK`, `
+  await send(to, `Про-фактура ${invoice.invoiceNumber} — NexaAI`, `
     <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
       <h2 style="color: #8b5cf6;">Про-фактура ${invoice.invoiceNumber}</h2>
       <p>Ви благодариме за надградбата на <strong>${planName}</strong> план (${periodLabel}).</p>
@@ -126,7 +126,7 @@ export async function sendTrialExpiringEmail(to: string, name: string, daysLeft:
   await send(to, `Вашиот пробен период истекува за ${daysLeft} ${daysLeft === 1 ? "ден" : "дена"}`, `
     <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
       <h2 style="color: #f59e0b;">Здраво ${name},</h2>
-      <p>Вашиот бесплатен пробен период на <strong>ChatBot MK</strong> истекува за <strong>${daysLeft} ${daysLeft === 1 ? "ден" : "дена"}</strong>.</p>
+      <p>Вашиот бесплатен пробен период на <strong>NexaAI</strong> истекува за <strong>${daysLeft} ${daysLeft === 1 ? "ден" : "дена"}</strong>.</p>
       <p>По истекувањето, вашиот chatbot нема да одговара на пораки додека не надградите на платен план.</p>
       <p>
         <a href="${env.appUrl.replace('/api', '').replace('api.', '')}/dashboard/upgrade" style="display: inline-block; background: #8b5cf6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
@@ -151,7 +151,7 @@ export async function sendPlanActivatedEmail(to: string, name: string, planName:
     <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
       <h2 style="color: #22c55e;">Планот е активиран!</h2>
       <p>Здраво ${name},</p>
-      <p>Вашиот <strong>${planName}</strong> план на ChatBot MK е успешно активиран.</p>
+      <p>Вашиот <strong>${planName}</strong> план на NexaAI е успешно активиран.</p>
       <p>Активен до: <strong>${formattedDate}</strong></p>
       <p>
         <a href="${env.appUrl.replace('/api', '').replace('api.', '')}/dashboard" style="display: inline-block; background: #8b5cf6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">

@@ -92,7 +92,7 @@ const Dashboard = () => {
         <div className="container flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 font-display font-bold text-xl text-foreground">
             <Bot className="w-7 h-7 text-primary" />
-            ChatBot MK
+            NexaAI
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">

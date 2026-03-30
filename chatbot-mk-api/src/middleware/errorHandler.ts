@@ -16,6 +16,7 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     return;
   }
 
-  console.error("Unhandled error:", err);
+  const isProduction = process.env.NODE_ENV === "production";
+  console.error("Unhandled error:", isProduction ? err.message : err);
   res.status(500).json({ error: "Internal server error" });
 }

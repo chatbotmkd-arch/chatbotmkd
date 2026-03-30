@@ -4,7 +4,7 @@ import { useLanguage } from "@/lib/language";
 
 const t = {
   en: {
-    desc: "AI chatbot platform for businesses. Create, train, and connect chatbots to Facebook Messenger.",
+    desc: "AI chatbot platform for businesses. Create, train, and connect chatbots to Facebook, Instagram, and your website.",
     product: "Product",
     features: "Features",
     pricing: "Pricing",
@@ -18,7 +18,7 @@ const t = {
     copy: "All rights reserved.",
   },
   mk: {
-    desc: "AI chatbot платформа за бизниси. Креирајте, тренирајте и поврзете chatbot-и со Facebook Messenger.",
+    desc: "AI chatbot платформа за бизниси. Креирајте, тренирајте и поврзете chatbot-и со Facebook, Instagram и вашата веб-страна.",
     product: "Производ",
     features: "Функции",
     pricing: "Цени",
@@ -36,7 +36,7 @@ const t = {
 const Footer = () => {
   const { lang } = useLanguage();
   const c = t[lang];
-  const brand = lang === "en" ? "ChatbotMKD" : "ЧатБот МК";
+  const brand = "NexaAI";
 
   return (
     <footer className="border-t border-border py-12">
@@ -63,8 +63,8 @@ const Footer = () => {
             <h4 className="font-display font-semibold text-sm text-foreground mb-4">{c.company}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href="mailto:contact@chatbotmkd.mk" className="hover:text-foreground transition-colors">
-                  contact@chatbotmkd.mk
+                <a href="mailto:info@nexa.mk" className="hover:text-foreground transition-colors">
+                  info@nexa.mk
                 </a>
               </li>
             </ul>

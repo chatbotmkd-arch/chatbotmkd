@@ -179,7 +179,7 @@ const UpgradePage = () => {
         <div className="container flex items-center justify-between h-16">
           <Link to="/dashboard" className="flex items-center gap-2 font-display font-bold text-xl text-foreground">
             <Bot className="w-7 h-7 text-primary" />
-            ChatBot MK
+            NexaAI
           </Link>
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="gap-2">
             <ArrowLeft className="w-4 h-4" />

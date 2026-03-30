@@ -187,7 +187,7 @@ export default function AdminDashboard() {
         <div className="container flex items-center justify-between h-16">
           <Link to="/dashboard" className="flex items-center gap-2 font-display font-bold text-xl text-foreground">
             <Bot className="w-7 h-7 text-primary" />
-            ChatBot MK
+            NexaAI
             <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full font-medium ml-2">
               Admin
             </span>

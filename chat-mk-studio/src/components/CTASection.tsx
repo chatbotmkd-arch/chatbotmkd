@@ -6,13 +6,13 @@ import { useLanguage } from "@/lib/language";
 
 const t = {
   en: {
-    title: "Ready to automate your Facebook Page messaging?",
-    subtitle: "Create your AI chatbot in minutes and start responding to customers instantly — 24/7.",
+    title: "Ready to automate your customer messaging?",
+    subtitle: "Create your AI chatbot in minutes and start responding to customers on Facebook, Instagram, and your website — 24/7.",
     cta: "Get Started",
   },
   mk: {
-    title: "Подготвени сте да го автоматизирате вашиот Messenger?",
-    subtitle: "Креирајте го вашиот AI chatbot за неколку минути и почнете да одговарате на клиенти инстантно — 24/7.",
+    title: "Подготвени сте да ги автоматизирате пораките од клиенти?",
+    subtitle: "Креирајте го вашиот AI chatbot за неколку минути и почнете да одговарате на клиенти на Facebook, Instagram и вашата веб-страна — 24/7.",
     cta: "Започни бесплатно",
   },
 };

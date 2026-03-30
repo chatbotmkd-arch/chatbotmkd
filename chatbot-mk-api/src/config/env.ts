@@ -26,7 +26,7 @@ export const env = {
 
   openaiApiKey: requireEnv("OPENAI_API_KEY"),
 
-  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:8080",
+  corsOrigin: requireEnv("CORS_ORIGIN", isProduction ? undefined : "http://localhost:8080"),
 
   metaAppId: process.env.META_APP_ID || "",
   metaAppSecret: process.env.META_APP_SECRET || "",
@@ -38,7 +38,7 @@ export const env = {
   appUrl: process.env.APP_URL || "http://localhost:3001",
 
   resendApiKey: process.env.RESEND_API_KEY || "",
-  emailFrom: process.env.EMAIL_FROM || "ChatBot MK <noreply@chatbotmkd.mk>",
+  emailFrom: process.env.EMAIL_FROM || "NexaAI <noreply@nexa.mk>",
 
   adminEmails: (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
 } as const;

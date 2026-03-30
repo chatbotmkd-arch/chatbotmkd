@@ -6,8 +6,8 @@ import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/language";
 
 const t = {
-  en: { features: "Features", howItWorks: "How It Works", pricing: "Pricing", faq: "FAQ", login: "Log in", cta: "Start free" },
-  mk: { features: "Функции", howItWorks: "Како работи", pricing: "Цени", faq: "ЧПП", login: "Најави се", cta: "Започни бесплатно" },
+  en: { features: "Features", howItWorks: "How It Works", pricing: "Pricing", faq: "FAQ", login: "Log in", cta: "Start free", dashboard: "Dashboard" },
+  mk: { features: "Функции", howItWorks: "Како работи", pricing: "Цени", faq: "ЧПП", login: "Најави се", cta: "Започни бесплатно", dashboard: "Контролна табла" },
 };
 
 const Navbar = () => {
@@ -28,7 +28,7 @@ const Navbar = () => {
       <div className="container flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2 font-display font-bold text-xl text-foreground">
           <Bot className="w-7 h-7 text-primary" />
-          {lang === "en" ? "ChatbotMKD" : "ЧатБот МК"}
+          NexaAI
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -48,7 +48,7 @@ const Navbar = () => {
 
           {user ? (
             <Link to="/dashboard">
-              <Button size="sm" className="px-6 shadow-sm shadow-primary/15">Dashboard</Button>
+              <Button size="sm" className="px-6 shadow-sm shadow-primary/15">{c.dashboard}</Button>
             </Link>
           ) : (
             <>
@@ -76,7 +76,7 @@ const Navbar = () => {
           ))}
           {user ? (
             <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
-              <Button className="w-full" size="sm">Dashboard</Button>
+              <Button className="w-full" size="sm">{c.dashboard}</Button>
             </Link>
           ) : (
             <>

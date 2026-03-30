@@ -34,7 +34,7 @@ export const PLAN_PRICING = {
 
 export const BANK_DETAILS = {
   bankName: "Стопанска Банка АД Скопје",
-  accountHolder: "ChatBot MK ДООЕЛ Скопје",
+  accountHolder: "NexaAI ДООЕЛ Скопје",
   iban: "MK07300000000000000", // TODO: replace with real IBAN
   swift: "STOBMK2X",
   purpose: "Про-фактура",
