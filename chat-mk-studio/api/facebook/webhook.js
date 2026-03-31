@@ -8,16 +8,13 @@ const APP_SECRET = process.env.FACEBOOK_APP_SECRET;
  * Verify X-Hub-Signature-256 header from Meta.
  * Returns true if valid or if APP_SECRET is not configured (dev mode).
  */
-function verifySignature(req) {
+function verifySignature(rawBody, signature) {
   if (!APP_SECRET) return true; // skip in dev if not configured
-
-  const signature = req.headers["x-hub-signature-256"];
   if (!signature) return false;
 
-  const body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
   const expected =
     "sha256=" +
-    crypto.createHmac("sha256", APP_SECRET).update(body).digest("hex");
+    crypto.createHmac("sha256", APP_SECRET).update(rawBody).digest("hex");
 
   return crypto.timingSafeEqual(
     Buffer.from(signature),
@@ -44,6 +41,20 @@ async function sendReply(senderPsid, text) {
   return data;
 }
 
+// Vercel config: disable body parsing so we get the raw buffer for signature verification
+export const config = {
+  api: { bodyParser: false },
+};
+
+function getRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on("data", (chunk) => chunks.push(chunk));
+    req.on("end", () => resolve(Buffer.concat(chunks)));
+    req.on("error", reject);
+  });
+}
+
 export default async function handler(req, res) {
   // --- GET: Meta verification ---
   if (req.method === "GET") {
@@ -67,14 +78,16 @@ export default async function handler(req, res) {
 
   // --- POST: Incoming messages ---
   if (req.method === "POST") {
-    // Verify request signature from Meta
-    if (!verifySignature(req)) {
+    const rawBody = await getRawBody(req);
+
+    // Verify request signature from Meta using raw body
+    if (!verifySignature(rawBody, req.headers["x-hub-signature-256"])) {
       console.error("[Webhook] Invalid X-Hub-Signature-256");
       res.status(403).send("Invalid signature");
       return;
     }
 
-    const body = req.body;
+    const body = JSON.parse(rawBody.toString());
 
     if (body?.object === "page" && body.entry) {
       for (const entry of body.entry) {
