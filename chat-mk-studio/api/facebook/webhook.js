@@ -1,5 +1,29 @@
+import crypto from "crypto";
+
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.FACEBOOK_VERIFY_TOKEN;
+const APP_SECRET = process.env.FACEBOOK_APP_SECRET;
+
+/**
+ * Verify X-Hub-Signature-256 header from Meta.
+ * Returns true if valid or if APP_SECRET is not configured (dev mode).
+ */
+function verifySignature(req) {
+  if (!APP_SECRET) return true; // skip in dev if not configured
+
+  const signature = req.headers["x-hub-signature-256"];
+  if (!signature) return false;
+
+  const body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+  const expected =
+    "sha256=" +
+    crypto.createHmac("sha256", APP_SECRET).update(body).digest("hex");
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
 
 async function sendReply(senderPsid, text) {
   const url = `https://graph.facebook.com/v19.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`;
@@ -43,6 +67,13 @@ export default async function handler(req, res) {
 
   // --- POST: Incoming messages ---
   if (req.method === "POST") {
+    // Verify request signature from Meta
+    if (!verifySignature(req)) {
+      console.error("[Webhook] Invalid X-Hub-Signature-256");
+      res.status(403).send("Invalid signature");
+      return;
+    }
+
     const body = req.body;
 
     if (body?.object === "page" && body.entry) {
