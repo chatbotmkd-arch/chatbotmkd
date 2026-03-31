@@ -77,16 +77,39 @@ export async function oauthCallback(req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
-    // Store pages temporarily so the frontend can show a picker.
-    // We encode them in the redirect URL. For a single page, auto-connect.
-    const pagesParam = Buffer.from(JSON.stringify(
-      pages.map((p) => ({ id: p.id, name: p.name, token: p.access_token }))
-    )).toString("base64url");
+    // Auto-connect the first page (most users manage one page)
+    const page = pages[0];
+
+    // Check for linked Instagram account
+    let instagramAccountId: string | null = null;
+    try {
+      instagramAccountId = await MetaService.getInstagramAccount(page.id, page.access_token);
+    } catch {
+      // Non-fatal
+    }
+
+    // Subscribe webhook for this page
+    await MetaService.subscribePageWebhook(page.id, page.access_token);
+
+    // Create or update MetaConnection
+    await MetaConnection.findOneAndUpdate(
+      { pageId: page.id },
+      {
+        teamId: stateData.teamId,
+        chatbotId: stateData.chatbotId,
+        pageId: page.id,
+        pageName: page.name || page.id,
+        pageAccessTokenEncrypted: encrypt(page.access_token),
+        instagramAccountId,
+        webhookSubscribed: true,
+        status: "active",
+        connectedAt: new Date(),
+      },
+      { upsert: true, new: true }
+    );
 
     res.redirect(
-      `${env.corsOrigin}/dashboard?meta_pages=${pagesParam}` +
-      `&meta_chatbot=${stateData.chatbotId}` +
-      `&meta_team=${stateData.teamId}`
+      `${env.corsOrigin}/dashboard/chatbot/${stateData.chatbotId}?meta_connected=${page.name}`
     );
   } catch (err) {
     console.error("Meta OAuth error:", err);
