@@ -20,9 +20,11 @@ interface WizardStepProps {
   onChange: (value: string | string[]) => void;
   /** When true, renders with a smaller heading for grouped display */
   compact?: boolean;
+  lang?: "en" | "mk";
 }
 
-const WizardStep = ({ question, answers, value, onChange, compact = false }: WizardStepProps) => {
+const WizardStep = ({ question, answers, value, onChange, compact = false, lang = "mk" }: WizardStepProps) => {
+  const isEn = lang === "en";
   const questionText = q(question.question, answers);
   const subtitleText = question.subtitle
     ? typeof question.subtitle === "function"
@@ -41,7 +43,7 @@ const WizardStep = ({ question, answers, value, onChange, compact = false }: Wiz
           <label className="font-medium text-sm text-foreground">
             {questionText}
             {!question.required && (
-              <span className="text-muted-foreground font-normal ml-1">(опционално)</span>
+              <span className="text-muted-foreground font-normal ml-1">{isEn ? "(optional)" : "(опционално)"}</span>
             )}
           </label>
         ) : (
@@ -162,7 +164,7 @@ const WizardStep = ({ question, answers, value, onChange, compact = false }: Wiz
       {question.type === "select" && question.options && (
         <Select value={strValue} onValueChange={(v) => onChange(v)}>
           <SelectTrigger className={compact ? "text-sm h-10" : "text-base h-12"}>
-            <SelectValue placeholder="Изберете..." />
+            <SelectValue placeholder={isEn ? "Select..." : "Изберете..."} />
           </SelectTrigger>
           <SelectContent>
             {question.options.map((opt) => (

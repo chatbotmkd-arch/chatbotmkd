@@ -17,12 +17,98 @@ export interface ScrapedBusinessInfo {
   suggestedGreeting?: string;
 }
 
+const strings = {
+  en: {
+    title: "Quick Setup",
+    subtitle: "Enter your website and/or Facebook page URL to automatically fill in basic information. Both fields are optional.",
+    websiteLabel: "Website",
+    facebookLabel: "Facebook Page",
+    optional: "(optional)",
+    websitePlaceholder: "e.g. https://your-business.com",
+    facebookPlaceholder: "e.g. https://facebook.com/YourPage",
+    scanning: "Analyzing...",
+    scan: "Scan",
+    invalidWebsite: "Invalid website URL.",
+    invalidFacebook: "Invalid Facebook page URL.",
+    noResults: "Could not extract information. Try a different URL or skip.",
+    scanError: "Error while scanning. Please try again.",
+    scanSuccess: "Successfully scanned!",
+    business: "Business",
+    industry: "Industry",
+    description: "Description",
+    phone: "Phone",
+    location: "Location",
+    workingHours: "Working hours",
+    prefillNote: "This information will be pre-filled in the wizard. You can change it at any step.",
+    useResults: "Use this information",
+    skip: "Skip — I'll enter the information manually",
+  },
+  mk: {
+    title: "Брзо поставување",
+    subtitle: "Внесете го линкот на вашиот веб-сајт и/или Facebook страница за автоматски да ги пополниме основните информации. Двете полиња се опционални.",
+    websiteLabel: "Веб-страница",
+    facebookLabel: "Facebook страница",
+    optional: "(опционално)",
+    websitePlaceholder: "нпр. https://vasiot-biznis.mk",
+    facebookPlaceholder: "нпр. https://facebook.com/VasaStrana",
+    scanning: "Анализирам...",
+    scan: "Скенирај",
+    invalidWebsite: "Невалиден линк за веб-страница.",
+    invalidFacebook: "Невалиден линк за Facebook страница.",
+    noResults: "Не успеав да извлечам информации. Пробајте со друг линк или прескокнете.",
+    scanError: "Грешка при скенирање. Пробајте повторно.",
+    scanSuccess: "Успешно скенирано!",
+    business: "Бизнис",
+    industry: "Индустрија",
+    description: "Опис",
+    phone: "Телефон",
+    location: "Локација",
+    workingHours: "Работно време",
+    prefillNote: "Овие информации ќе бидат пополнети во визардот. Можете да ги промените во секој чекор.",
+    useResults: "Користи ги овие информации",
+    skip: "Прескокни — ќе ги внесам информациите рачно",
+  },
+};
+
+const industryLabelsI18n = {
+  en: {
+    retail: "Retail / E-commerce",
+    hospitality: "Hospitality / Hotels",
+    healthcare: "Healthcare / Medicine",
+    education: "Education",
+    realestate: "Real Estate",
+    finance: "Finance / Insurance",
+    beauty: "Beauty / Cosmetics",
+    automotive: "Automotive",
+    legal: "Legal Services",
+    it_services: "IT / Technology",
+    food: "Food / Restaurants / Delivery",
+    other: "Other",
+  } as Record<string, string>,
+  mk: {
+    retail: "Малопродажба / Е-трговија",
+    hospitality: "Угостителство / Хотелиерство",
+    healthcare: "Здравство / Медицина",
+    education: "Образование",
+    realestate: "Недвижности",
+    finance: "Финансии / Осигурување",
+    beauty: "Убавина / Козметика",
+    automotive: "Автоиндустрија",
+    legal: "Правни услуги",
+    it_services: "ИТ / Технологија",
+    food: "Храна / Ресторани / Достава",
+    other: "Друго",
+  } as Record<string, string>,
+};
+
 interface UrlScanStepProps {
   onScanComplete: (scannedInfo: ScrapedBusinessInfo) => void;
   onSkip: () => void;
+  lang?: "en" | "mk";
 }
 
-export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps) {
+export default function UrlScanStep({ onScanComplete, onSkip, lang = "mk" }: UrlScanStepProps) {
+  const c = strings[lang];
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [facebookUrl, setFacebookUrl] = useState("");
   const [scanning, setScanning] = useState(false);
@@ -49,11 +135,11 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
     const facebook = facebookUrl.trim() ? normalizeUrl(facebookUrl.trim()) : "";
 
     if (website && !isValidUrl(websiteUrl)) {
-      setError("Невалиден линк за веб-страница.");
+      setError(c.invalidWebsite);
       return;
     }
     if (facebook && !isValidUrl(facebookUrl)) {
-      setError("Невалиден линк за Facebook страница.");
+      setError(c.invalidFacebook);
       return;
     }
     if (!website && !facebook) return;
@@ -63,7 +149,6 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
     setResult(null);
 
     try {
-      // Scrape both if provided, merge results (Facebook structured data + website AI analysis)
       let websiteResult: ScrapedBusinessInfo = {};
       let facebookResult: ScrapedBusinessInfo = {};
 
@@ -71,11 +156,9 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
         try {
           facebookResult = await api.post<ScrapedBusinessInfo>("/scrape", { url: facebook });
         } catch (err) {
-          // If only Facebook was provided, propagate the error
           if (!website) {
             throw err;
           }
-          // Otherwise, continue with just the website
           console.warn("Facebook scrape failed, continuing with website only");
         }
       }
@@ -84,7 +167,6 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
         try {
           websiteResult = await api.post<ScrapedBusinessInfo>("/scrape", { url: website });
         } catch (err) {
-          // If only website was provided, propagate the error
           if (!facebook || !Object.keys(facebookResult).length) {
             throw err;
           }
@@ -92,27 +174,24 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
         }
       }
 
-      // Merge: Facebook structured data takes priority, website fills gaps
       const merged: ScrapedBusinessInfo = {
         ...websiteResult,
         ...facebookResult,
-        // Prefer longer description
         businessDescription:
           (facebookResult.businessDescription?.length || 0) >= (websiteResult.businessDescription?.length || 0)
             ? facebookResult.businessDescription || websiteResult.businessDescription
             : websiteResult.businessDescription || facebookResult.businessDescription,
-        // Prefer website greeting since AI generates better ones
         suggestedGreeting: websiteResult.suggestedGreeting || facebookResult.suggestedGreeting,
       };
 
       if (!Object.values(merged).some(Boolean)) {
-        setError("Не успеав да извлечам информации. Пробајте со друг линк или прескокнете.");
+        setError(c.noResults);
         return;
       }
 
       setResult(merged);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Грешка при скенирање. Пробајте повторно.");
+      setError(err instanceof Error ? err.message : c.scanError);
     } finally {
       setScanning(false);
     }
@@ -123,15 +202,16 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
     onScanComplete(result);
   };
 
+  const industryLabels = industryLabelsI18n[lang];
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="font-display font-bold text-2xl text-foreground">
-          Брзо поставување
+          {c.title}
         </h2>
         <p className="text-muted-foreground mt-2">
-          Внесете го линкот на вашиот веб-сајт и/или Facebook страница за автоматски
-          да ги пополниме основните информации. Двете полиња се опционални.
+          {c.subtitle}
         </p>
       </div>
 
@@ -141,8 +221,8 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-foreground flex items-center gap-2">
             <Globe className="w-4 h-4 text-muted-foreground" />
-            Веб-страница
-            <span className="text-xs text-muted-foreground font-normal">(опционално)</span>
+            {c.websiteLabel}
+            <span className="text-xs text-muted-foreground font-normal">{c.optional}</span>
           </label>
           <Input
             value={websiteUrl}
@@ -151,7 +231,7 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
               setError("");
               setResult(null);
             }}
-            placeholder="нпр. https://vasiot-biznis.mk"
+            placeholder={c.websitePlaceholder}
             className="text-base h-11"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !scanning) {
@@ -168,8 +248,8 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-foreground flex items-center gap-2">
             <Facebook className="w-4 h-4 text-blue-500" />
-            Facebook страница
-            <span className="text-xs text-muted-foreground font-normal">(опционално)</span>
+            {c.facebookLabel}
+            <span className="text-xs text-muted-foreground font-normal">{c.optional}</span>
           </label>
           <Input
             value={facebookUrl}
@@ -178,7 +258,7 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
               setError("");
               setResult(null);
             }}
-            placeholder="нпр. https://facebook.com/VasaStrana"
+            placeholder={c.facebookPlaceholder}
             className="text-base h-11"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !scanning) {
@@ -198,12 +278,12 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
           {scanning ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Анализирам...
+              {c.scanning}
             </>
           ) : (
             <>
               <Globe className="w-4 h-4" />
-              Скенирај
+              {c.scan}
             </>
           )}
         </Button>
@@ -223,28 +303,28 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
           <CardContent className="pt-6 space-y-4">
             <div className="flex items-center gap-2 text-primary font-medium">
               <CheckCircle2 className="w-5 h-5" />
-              Успешно скенирано!
+              {c.scanSuccess}
             </div>
 
             <div className="space-y-3">
               {result.businessName && (
-                <InfoRow label="Бизнис" value={result.businessName} />
+                <InfoRow label={c.business} value={result.businessName} />
               )}
               {result.industry && (
-                <InfoRow label="Индустрија" value={industryLabel(result.industry)} />
+                <InfoRow label={c.industry} value={industryLabels[result.industry] || result.industry} />
               )}
               {result.businessDescription && (
-                <InfoRow label="Опис" value={result.businessDescription} />
+                <InfoRow label={c.description} value={result.businessDescription} />
               )}
-              {result.phone && <InfoRow label="Телефон" value={result.phone} />}
-              {result.location && <InfoRow label="Локација" value={result.location} />}
+              {result.phone && <InfoRow label={c.phone} value={result.phone} />}
+              {result.location && <InfoRow label={c.location} value={result.location} />}
               {result.workingHours && (
-                <InfoRow label="Работно време" value={result.workingHours} />
+                <InfoRow label={c.workingHours} value={result.workingHours} />
               )}
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Овие информации ќе бидат пополнети во визардот. Можете да ги промените во секој чекор.
+              {c.prefillNote}
             </p>
 
             <Button
@@ -253,7 +333,7 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
               size="lg"
             >
               <ArrowRight className="w-4 h-4" />
-              Користи ги овие информации
+              {c.useResults}
             </Button>
           </CardContent>
         </Card>
@@ -265,7 +345,7 @@ export default function UrlScanStep({ onScanComplete, onSkip }: UrlScanStepProps
           onClick={onSkip}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
         >
-          Прескокни — ќе ги внесам информациите рачно
+          {c.skip}
         </button>
       </div>
     </div>
@@ -281,23 +361,4 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <span className="text-sm text-foreground">{value}</span>
     </div>
   );
-}
-
-const industryLabels: Record<string, string> = {
-  retail: "Малопродажба / Е-трговија",
-  hospitality: "Угостителство / Хотелиерство",
-  healthcare: "Здравство / Медицина",
-  education: "Образование",
-  realestate: "Недвижности",
-  finance: "Финансии / Осигурување",
-  beauty: "Убавина / Козметика",
-  automotive: "Автоиндустрија",
-  legal: "Правни услуги",
-  it_services: "ИТ / Технологија",
-  food: "Храна / Ресторани / Достава",
-  other: "Друго",
-};
-
-function industryLabel(key: string): string {
-  return industryLabels[key] || key;
 }

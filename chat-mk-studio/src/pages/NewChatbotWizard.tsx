@@ -173,7 +173,7 @@ const NewChatbotWizard = () => {
     setShowUrlScan(false);
   };
 
-  const groups = useMemo(() => getVisibleGroups(answers), [answers]);
+  const groups = useMemo(() => getVisibleGroups(answers, lang), [answers, lang]);
   const currentGroup = groups[currentGroupIndex];
   const totalGroups = groups.length;
   const progressPercent = showReview
@@ -202,7 +202,7 @@ const NewChatbotWizard = () => {
     setDirection(1);
 
     // Apply defaults for the next group's questions
-    const newGroups = getVisibleGroups(answers);
+    const newGroups = getVisibleGroups(answers, lang);
     const nextIdx = currentGroupIndex + 1;
 
     if (nextIdx >= newGroups.length) {
@@ -335,6 +335,7 @@ const NewChatbotWizard = () => {
                 <UrlScanStep
                   onScanComplete={handleScanComplete}
                   onSkip={handleScanSkip}
+                  lang={lang}
                 />
               </motion.div>
             ) : showReview ? (
@@ -364,6 +365,7 @@ const NewChatbotWizard = () => {
                   group={currentGroup}
                   answers={answers}
                   onAnswer={handleAnswer}
+                  lang={lang}
                 />
               </motion.div>
             ) : null}
@@ -435,9 +437,10 @@ interface GroupScreenProps {
   group: WizardGroup;
   answers: WizardAnswers;
   onAnswer: (questionId: string, value: string | string[]) => void;
+  lang: "en" | "mk";
 }
 
-function GroupScreen({ group, answers, onAnswer }: GroupScreenProps) {
+function GroupScreen({ group, answers, onAnswer, lang }: GroupScreenProps) {
   const isSingleQuestion = group.questions.length === 1;
 
   if (isSingleQuestion) {
@@ -449,6 +452,7 @@ function GroupScreen({ group, answers, onAnswer }: GroupScreenProps) {
         answers={answers}
         value={value}
         onChange={(v) => onAnswer(question.id, v)}
+        lang={lang}
       />
     );
   }
@@ -470,6 +474,7 @@ function GroupScreen({ group, answers, onAnswer }: GroupScreenProps) {
               value={value}
               onChange={(v) => onAnswer(question.id, v)}
               compact
+              lang={lang}
             />
           );
         })}

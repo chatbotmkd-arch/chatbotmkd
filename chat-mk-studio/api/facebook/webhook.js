@@ -53,7 +53,19 @@ export default async function handler(req, res) {
 
           if (senderPsid && messageText) {
             console.log(`[Webhook] From ${senderPsid}: ${messageText}`);
-            await sendReply(senderPsid, "Hello! This is my chatbot 🚀");
+
+            const userMessage = messageText.toLowerCase();
+            let reply = "Thanks for reaching out! I'll respond shortly.";
+
+            if (userMessage.includes("hello") || userMessage.includes("hi")) {
+              reply = "Hey! 👋 How can I help you today?";
+            } else if (userMessage.includes("what")) {
+              reply = "I'm an AI chatbot that automatically replies to messages.";
+            } else if (userMessage.includes("price") || userMessage.includes("cost")) {
+              reply = "Pricing depends on the plan. Let me know what you need!";
+            }
+
+            await sendReply(senderPsid, reply);
           }
         }
       }
