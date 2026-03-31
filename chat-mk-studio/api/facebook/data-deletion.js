@@ -38,7 +38,7 @@ export default async function handler(req, res) {
 
   // Meta expects this exact JSON shape
   res.status(200).json({
-    url: `https://nexa.mk/deletion-status?code=${confirmationCode}`,
+    url: `https://ai.nexa.mk/deletion-status?code=${confirmationCode}`,
     confirmation_code: confirmationCode,
   });
 }
