@@ -9,7 +9,6 @@ import { env } from "../config/env";
 
 const OAUTH_SCOPES = [
   "pages_messaging",
-  "pages_read_engagement",
   "pages_manage_metadata",
 ].join(",");
 
