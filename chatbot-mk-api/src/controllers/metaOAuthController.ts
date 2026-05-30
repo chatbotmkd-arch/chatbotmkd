@@ -7,11 +7,6 @@ import { AppError } from "../middleware/errorHandler";
 import { AuthRequest } from "../types";
 import { env } from "../config/env";
 
-const OAUTH_SCOPES = [
-  "pages_messaging",
-  "pages_manage_metadata",
-].join(",");
-
 /**
  * Step 2a — Initiate OAuth.
  * Frontend calls this, gets a redirect URL back.
@@ -35,7 +30,7 @@ export async function initiateOAuth(req: AuthRequest, res: Response): Promise<vo
     `https://www.facebook.com/${env.metaApiVersion}/dialog/oauth` +
     `?client_id=${env.metaAppId}` +
     `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-    `&scope=${OAUTH_SCOPES}` +
+    `&config_id=${env.metaLoginConfigId}` +
     `&response_type=code` +
     `&state=${state}`;
 

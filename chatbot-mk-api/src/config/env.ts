@@ -32,6 +32,7 @@ export const env = {
   metaAppSecret: process.env.META_APP_SECRET || "",
   metaWebhookVerifyToken: requireEnv("META_WEBHOOK_VERIFY_TOKEN", isProduction ? undefined : "chatbotmk-verify-token"),
   metaApiVersion: process.env.META_API_VERSION || "v19.0",
+  metaLoginConfigId: process.env.META_LOGIN_CONFIG_ID || "",
 
   encryptionKey: requireEnv("DATABASE_ENCRYPTION_KEY", isProduction ? undefined : "dev-encryption-key-32chars-long!"),
 
